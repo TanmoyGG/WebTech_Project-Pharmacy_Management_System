@@ -1,0 +1,2 @@
+-- Database schema SQL file
+-- Tables for Pharmacy Management System

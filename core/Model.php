@@ -1,0 +1,3 @@
+<?php
+// Base Model class
+?>

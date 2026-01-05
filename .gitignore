@@ -1,0 +1,8 @@
+# Git ignore file
+/public/uploads/*
+!/public/uploads/.gitkeep
+/config/database.php
+.env
+*.log
+.DS_Store
+Thumbs.db

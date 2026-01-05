@@ -1,0 +1,3 @@
+<?php
+// Validation helper functions
+?>
