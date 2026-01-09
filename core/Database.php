@@ -1,8 +1,6 @@
 <?php
 // Database connection and query functions (Procedural)
-
-use mysqli;
-use mysqli_result;
+ 
 
 // Global database connection variable
 /** @var mysqli|null $db_connection */
