@@ -12,7 +12,7 @@ define('BASE_URL', $protocol . '://' . $serverName . '/WebTech_Project-Pharmacy_
 // Database Configuration
 define('DB_HOST', 'localhost');
 define('DB_USER', 'root');
-define('DB_PASSWORD', '');
+define('DB_PASSWORD', null);  // null for empty password
 define('DB_NAME', 'pharmacy_management');
 
 // Application settings
