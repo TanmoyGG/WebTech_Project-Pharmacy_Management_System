@@ -1,9 +1,9 @@
 <?php
-// User Controller - User profile and account management
-// All functions follow procedural pattern: user_[action]()
+// Profile Controller - User profile management
+// All functions follow procedural pattern: profile_[action]()
 
 // Display user profile
-function user_profile() {
+function profile_view() {
     requireAuth();
     
     $userId = getCurrentUserId();
@@ -13,7 +13,7 @@ function user_profile() {
 }
 
 // Display edit profile page
-function user_editProfile() {
+function profile_edit() {
     requireAuth();
     
     $userId = getCurrentUserId();
@@ -23,11 +23,11 @@ function user_editProfile() {
 }
 
 // Update user profile
-function user_updateProfile() {
+function profile_update() {
     requireAuth();
     
     if (!isPost()) {
-        redirectTo('user/profile');
+        redirectTo('profile/view');
     }
     
     $userId = getCurrentUserId();
@@ -38,14 +38,14 @@ function user_updateProfile() {
     
     if (isEmpty($name) || isEmpty($email)) {
         setFlash('Name and email are required', 'error');
-        redirectTo('user/edit_profile');
+        redirectTo('profile/edit');
     }
     
     $existingUser = fetchOne('SELECT id FROM users WHERE email = ? AND id != ?', 'ss', [$email, $userId]);
     
     if ($existingUser) {
         setFlash('Email is already in use', 'error');
-        redirectTo('user/edit_profile');
+        redirectTo('profile/edit');
     }
     
     $updateData = [
@@ -62,6 +62,6 @@ function user_updateProfile() {
     $_SESSION['user_email'] = $email;
     
     setFlash('Profile updated successfully', 'success');
-    redirectTo('user/profile');
+    redirectTo('profile/view');
 }
 ?>
