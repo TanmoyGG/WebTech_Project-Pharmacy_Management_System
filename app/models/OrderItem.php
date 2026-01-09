@@ -1,65 +1,133 @@
 <?php
-// OrderItem Model - Order items data operations (Procedural)
+// OrderItem Model - Procedural functions for order_items table
 
-// Get order item by ID
-function orderItemGetById($id) {
-    return getById('order_items', $id);
+function orderItemGetById($order_item_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT * FROM order_items WHERE id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('i', $order_item_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
 }
 
-// Get all order items for an order
-function orderItemGetByOrder($orderId) {
-    return fetchAll(
-        'SELECT oi.*, p.name, p.generic_name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?',
-        'i',
-        [$orderId]
-    );
+function orderItemsGetByOrder($order_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT * FROM order_items WHERE order_id = ? ORDER BY id ASC');
+    if (!$stmt) {
+        return [];
+    }
+    $stmt->bind_param('i', $order_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-// Create order item
-function orderItemCreate($orderId, $productId, $quantity, $price) {
-    $itemData = [
-        'order_id' => $orderId,
-        'product_id' => $productId,
-        'quantity' => $quantity,
-        'price' => $price,
-        'subtotal' => $quantity * $price
-    ];
-    
-    return insertRecord('order_items', $itemData);
+function orderItemAdd($order_id, $product_id, $quantity, $price) {
+    $db = getConnection();
+    $subtotal = $quantity * $price;
+    $stmt = $db->prepare('INSERT INTO order_items (order_id, product_id, quantity, price, subtotal) VALUES (?, ?, ?, ?, ?)');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('iiidd', $order_id, $product_id, $quantity, $price, $subtotal);
+    if ($stmt->execute()) {
+        return $db->insert_id;
+    }
+    return false;
 }
 
-// Update order item
-function orderItemUpdate($itemId, $data) {
-    return updateRecord('order_items', $data, 'id = ?', [$itemId]);
+function orderItemUpdateQuantity($order_item_id, $quantity) {
+    $db = getConnection();
+    $item = orderItemGetById($order_item_id);
+    if (!$item) {
+        return false;
+    }
+    $subtotal = $quantity * $item['price'];
+    $stmt = $db->prepare('UPDATE order_items SET quantity = ?, subtotal = ?, updated_at = NOW() WHERE id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('idi', $quantity, $subtotal, $order_item_id);
+    return $stmt->execute();
 }
 
-// Delete order item
-function orderItemDelete($itemId) {
-    return deleteRecord('order_items', 'id = ?', [$itemId]);
+function orderItemAdjustQuantity($order_item_id, $delta) {
+    $item = orderItemGetById($order_item_id);
+    if (!$item) {
+        return false;
+    }
+    $new_quantity = max(0, $item['quantity'] + $delta);
+    return orderItemUpdateQuantity($order_item_id, $new_quantity);
 }
 
-// Delete all items for order
-function orderItemDeleteByOrder($orderId) {
-    return deleteRecord('order_items', 'order_id = ?', [$orderId]);
+function orderItemUpdatePrice($order_item_id, $price) {
+    $db = getConnection();
+    $item = orderItemGetById($order_item_id);
+    if (!$item) {
+        return false;
+    }
+    $subtotal = $item['quantity'] * $price;
+    $stmt = $db->prepare('UPDATE order_items SET price = ?, subtotal = ?, updated_at = NOW() WHERE id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('ddi', $price, $subtotal, $order_item_id);
+    return $stmt->execute();
 }
 
-// Get item count for order
-function orderItemCount($orderId) {
-    return countRecords('order_items', 'order_id = ?', [$orderId]);
+function orderItemDelete($order_item_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('DELETE FROM order_items WHERE id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('i', $order_item_id);
+    return $stmt->execute();
 }
 
-// Get order item total (subtotal)
-function orderItemGetTotal($orderId) {
-    $result = fetchOne('SELECT SUM(subtotal) as total FROM order_items WHERE order_id = ?', 'i', [$orderId]);
-    return $result['total'] ?? 0;
+function orderItemsDeleteByOrder($order_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('DELETE FROM order_items WHERE order_id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('i', $order_id);
+    return $stmt->execute();
 }
 
-// Get popular products (by order quantity)
-function orderItemGetPopularProducts($limit = 10) {
-    return fetchAll(
-        'SELECT p.id, p.name, SUM(oi.quantity) as total_sold FROM order_items oi JOIN products p ON oi.product_id = p.id GROUP BY oi.product_id ORDER BY total_sold DESC LIMIT ?',
-        'i',
-        [$limit]
-    );
+function orderItemsTotals($order_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT COUNT(*) as item_count, SUM(quantity) as total_quantity, SUM(subtotal) as total_amount FROM order_items WHERE order_id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('i', $order_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
+}
+
+function orderItemExists($order_id, $product_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT id FROM order_items WHERE order_id = ? AND product_id = ? LIMIT 1');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('ii', $order_id, $product_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->num_rows > 0;
+}
+
+function orderItemGetQuantity($order_id, $product_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT quantity FROM order_items WHERE order_id = ? AND product_id = ? LIMIT 1');
+    if (!$stmt) {
+        return 0;
+    }
+    $stmt->bind_param('ii', $order_id, $product_id);
+    $stmt->execute();
+    $data = $stmt->get_result()->fetch_assoc();
+    return $data ? (int)$data['quantity'] : 0;
 }
 ?>

@@ -1,100 +1,236 @@
 <?php
-// Cart Model - Shopping cart data operations (Procedural)
+// Cart Model - Procedural functions for carts and cart_items tables
 
-// Get cart by ID
-function cartGetById($id) {
-    return getById('carts', $id);
+function cartValidStatus($status) {
+    $allowed = ['active', 'checked_out', 'abandoned'];
+    return in_array($status, $allowed) ? $status : 'active';
 }
 
-// Get active cart for user
-function cartGetActiveByUser($userId) {
-    return fetchOne('SELECT * FROM carts WHERE user_id = ? AND status = ?', 'ss', [$userId, 'active']);
-}
-
-// Create new cart
-function cartCreate($userId) {
-    $cartData = [
-        'user_id' => $userId,
-        'status' => 'active',
-        'created_at' => date('Y-m-d H:i:s')
-    ];
-    
-    return insertRecord('carts', $cartData);
-}
-
-// Get or create cart for user
-function cartGetOrCreate($userId) {
-    $cart = cartGetActiveByUser($userId);
-    
-    if (!$cart) {
-        $cartId = cartCreate($userId);
-        return cartGetById($cartId);
+function cartGetById($cart_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT * FROM carts WHERE id = ?');
+    if (!$stmt) {
+        return false;
     }
-    
-    return $cart;
+    $stmt->bind_param('i', $cart_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
 }
 
-// Get cart items
-function cartGetItems($cartId) {
-    return fetchAll(
-        'SELECT ci.*, p.name, p.price, p.quantity as stock FROM cart_items ci JOIN products p ON ci.product_id = p.id WHERE ci.cart_id = ?',
-        'i',
-        [$cartId]
-    );
+function cartGetActiveByUser($user_id) {
+    $db = getConnection();
+    $stmt = $db->prepare("SELECT * FROM carts WHERE user_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1");
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('i', $user_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
 }
 
-// Add item to cart
-function cartAddItem($cartId, $productId, $quantity) {
-    $existing = fetchOne('SELECT * FROM cart_items WHERE cart_id = ? AND product_id = ?', 'ii', [$cartId, $productId]);
-    
-    $product = getById('products', $productId);
-    
-    if ($existing) {
-        $newQuantity = $existing['quantity'] + $quantity;
-        return updateRecord('cart_items', ['quantity' => $newQuantity], 'id = ?', [$existing['id']]);
+function cartCreate($user_id) {
+    $db = getConnection();
+    $stmt = $db->prepare("INSERT INTO carts (user_id, status, created_at) VALUES (?, 'active', NOW())");
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('i', $user_id);
+    if ($stmt->execute()) {
+        return $db->insert_id;
+    }
+    return false;
+}
+
+function cartGetOrCreate($user_id) {
+    $cart = cartGetActiveByUser($user_id);
+    if ($cart) {
+        return $cart['id'];
+    }
+    return cartCreate($user_id);
+}
+
+function cartSetStatus($cart_id, $status) {
+    $db = getConnection();
+    $status = cartValidStatus($status);
+    $stmt = $db->prepare('UPDATE carts SET status = ?, updated_at = NOW() WHERE id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('si', $status, $cart_id);
+    return $stmt->execute();
+}
+
+function cartAddItem($cart_id, $product_id, $quantity, $price) {
+    $db = getConnection();
+    $subtotal = $quantity * $price;
+    $stmt = $db->prepare('INSERT INTO cart_items (cart_id, product_id, quantity, price, subtotal) VALUES (?, ?, ?, ?, ?)');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('iiidd', $cart_id, $product_id, $quantity, $price, $subtotal);
+    if ($stmt->execute()) {
+        return $db->insert_id;
+    }
+    return false;
+}
+
+function cartUpdateItemQuantity($cart_item_id, $quantity) {
+    $db = getConnection();
+    $item = cartGetItemById($cart_item_id);
+    if (!$item) {
+        return false;
+    }
+    $subtotal = $quantity * $item['price'];
+    $stmt = $db->prepare('UPDATE cart_items SET quantity = ?, subtotal = ?, updated_at = NOW() WHERE id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('idi', $quantity, $subtotal, $cart_item_id);
+    return $stmt->execute();
+}
+
+function cartAdjustItemQuantity($cart_item_id, $delta) {
+    $item = cartGetItemById($cart_item_id);
+    if (!$item) {
+        return false;
+    }
+    $new_quantity = max(0, $item['quantity'] + $delta);
+    if ($new_quantity === 0) {
+        return cartRemoveItem($cart_item_id);
+    }
+    return cartUpdateItemQuantity($cart_item_id, $new_quantity);
+}
+
+function cartGetItemById($cart_item_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT * FROM cart_items WHERE id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('i', $cart_item_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
+}
+
+function cartRemoveItem($cart_item_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('DELETE FROM cart_items WHERE id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('i', $cart_item_id);
+    return $stmt->execute();
+}
+
+function cartRemoveItemByProduct($cart_id, $product_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('DELETE FROM cart_items WHERE cart_id = ? AND product_id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('ii', $cart_id, $product_id);
+    return $stmt->execute();
+}
+
+function cartClear($cart_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('DELETE FROM cart_items WHERE cart_id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('i', $cart_id);
+    return $stmt->execute();
+}
+
+function cartDelete($cart_id) {
+    cartClear($cart_id);
+    $db = getConnection();
+    $stmt = $db->prepare('DELETE FROM carts WHERE id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('i', $cart_id);
+    return $stmt->execute();
+}
+
+function cartGetItems($cart_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT * FROM cart_items WHERE cart_id = ? ORDER BY id ASC');
+    if (!$stmt) {
+        return [];
+    }
+    $stmt->bind_param('i', $cart_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+
+function cartCalculateTotals($cart_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT COUNT(*) as item_count, SUM(quantity) as total_quantity, SUM(subtotal) as total_amount FROM cart_items WHERE cart_id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('i', $cart_id);
+    $stmt->execute();
+    $data = $stmt->get_result()->fetch_assoc();
+    if (!$data) {
+        return ['item_count' => 0, 'total_quantity' => 0, 'total_amount' => 0];
+    }
+    return $data;
+}
+
+function cartGetByStatus($status, $limit = null, $offset = 0) {
+    $db = getConnection();
+    $status = cartValidStatus($status);
+    $query = 'SELECT * FROM carts WHERE status = ? ORDER BY created_at DESC';
+    if ($limit !== null) {
+        $query .= ' LIMIT ? OFFSET ?';
+    }
+    $stmt = $db->prepare($query);
+    if (!$stmt) {
+        return [];
+    }
+    if ($limit !== null) {
+        $stmt->bind_param('sii', $status, $limit, $offset);
     } else {
-        $itemData = [
-            'cart_id' => $cartId,
-            'product_id' => $productId,
-            'quantity' => $quantity,
-            'price' => $product['price']
-        ];
-        return insertRecord('cart_items', $itemData);
+        $stmt->bind_param('s', $status);
     }
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-// Remove item from cart
-function cartRemoveItem($cartItemId) {
-    return deleteRecord('cart_items', 'id = ?', [$cartItemId]);
+function cartGetPaginated($page = 1, $per_page = 20, $status = 'active') {
+    $offset = ($page - 1) * $per_page;
+    return cartGetByStatus($status, $per_page, $offset);
 }
 
-// Clear cart
-function cartClear($cartId) {
-    return deleteRecord('cart_items', 'cart_id = ?', [$cartId]);
-}
-
-// Get cart total
-function cartGetTotal($cartId) {
-    $result = fetchOne('SELECT SUM(ci.quantity * ci.price) as total FROM cart_items ci WHERE ci.cart_id = ?', 'i', [$cartId]);
-    return $result['total'] ?? 0;
-}
-
-// Get cart item count
-function cartGetItemCount($cartId) {
-    $result = fetchOne('SELECT COUNT(*) as count FROM cart_items WHERE cart_id = ?', 'i', [$cartId]);
-    return $result['count'] ?? 0;
-}
-
-// Update cart item quantity
-function cartUpdateItemQuantity($cartItemId, $quantity) {
-    if ($quantity <= 0) {
-        return cartRemoveItem($cartItemId);
+function cartHasProduct($cart_id, $product_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT id FROM cart_items WHERE cart_id = ? AND product_id = ? LIMIT 1');
+    if (!$stmt) {
+        return false;
     }
-    return updateRecord('cart_items', ['quantity' => $quantity], 'id = ?', [$cartItemId]);
+    $stmt->bind_param('ii', $cart_id, $product_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->num_rows > 0;
 }
 
-// Archive/Close cart
-function cartClose($cartId) {
-    return updateRecord('carts', ['status' => 'closed'], 'id = ?', [$cartId]);
+function cartGetCount($status = null) {
+    $db = getConnection();
+    if ($status === null) {
+        $result = $db->query('SELECT COUNT(*) as count FROM carts');
+        $data = $result ? $result->fetch_assoc() : ['count' => 0];
+        return $data['count'];
+    }
+    $status = cartValidStatus($status);
+    $stmt = $db->prepare('SELECT COUNT(*) as count FROM carts WHERE status = ?');
+    if (!$stmt) {
+        return 0;
+    }
+    $stmt->bind_param('s', $status);
+    $stmt->execute();
+    $data = $stmt->get_result()->fetch_assoc();
+    return $data['count'];
 }
 ?>

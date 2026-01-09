@@ -1,85 +1,220 @@
 <?php
-// Transaction Model - Transaction data operations (Procedural)
+// Transaction Model - Procedural functions for unified transactions table
 
-// Get transaction by ID
-function transactionGetById($id) {
-    return getById('transactions', $id);
+function transactionValidStatus($status) {
+    $allowed = ['pending', 'completed', 'failed', 'refunded'];
+    return in_array($status, $allowed) ? $status : 'pending';
 }
 
-// Get all transactions
-function transactionGetAll() {
-    return getAllRecords('transactions');
+function transactionGetById($transaction_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT * FROM transactions WHERE id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('i', $transaction_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
 }
 
-// Get transactions by user
-function transactionGetByUser($userId) {
-    return fetchAll('SELECT * FROM transactions WHERE user_id = ? ORDER BY created_at DESC', 'i', [$userId]);
+function transactionCreate($order_id, $user_id, $amount, $payment_method, $status = 'pending', $transaction_date = null) {
+    $db = getConnection();
+    $status = transactionValidStatus($status);
+    if ($transaction_date === null) {
+        $transaction_date = date('Y-m-d H:i:s');
+    }
+    $stmt = $db->prepare('INSERT INTO transactions (order_id, user_id, amount, payment_method, status, transaction_date) VALUES (?, ?, ?, ?, ?, ?)');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('iidsss', $order_id, $user_id, $amount, $payment_method, $status, $transaction_date);
+    if ($stmt->execute()) {
+        return $db->insert_id;
+    }
+    return false;
 }
 
-// Create new transaction
-function transactionCreate($orderId, $userId, $amount, $paymentMethod = 'cash', $status = 'completed') {
-    $transactionData = [
-        'order_id' => $orderId,
-        'user_id' => $userId,
-        'amount' => $amount,
-        'payment_method' => $paymentMethod,
-        'status' => $status,
-        'transaction_date' => date('Y-m-d H:i:s'),
-        'created_at' => date('Y-m-d H:i:s')
-    ];
-    
-    return insertRecord('transactions', $transactionData);
+function transactionUpdateStatus($transaction_id, $status) {
+    $db = getConnection();
+    $status = transactionValidStatus($status);
+    $stmt = $db->prepare('UPDATE transactions SET status = ?, updated_at = NOW() WHERE id = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('si', $status, $transaction_id);
+    return $stmt->execute();
 }
 
-// Update transaction
-function transactionUpdate($transactionId, $data) {
-    $data['updated_at'] = date('Y-m-d H:i:s');
-    return updateRecord('transactions', $data, 'id = ?', [$transactionId]);
+function transactionGetByOrder($order_id) {
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT * FROM transactions WHERE order_id = ? ORDER BY transaction_date DESC');
+    if (!$stmt) {
+        return [];
+    }
+    $stmt->bind_param('i', $order_id);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-// Get transactions by date range
-function transactionGetByDateRange($startDate, $endDate) {
-    return fetchAll(
-        'SELECT * FROM transactions WHERE DATE(transaction_date) BETWEEN ? AND ? ORDER BY transaction_date DESC',
-        'ss',
-        [$startDate, $endDate]
-    );
+function transactionGetByUser($user_id = null, $status = null, $limit = null, $offset = 0) {
+    $db = getConnection();
+    $query = 'SELECT * FROM transactions WHERE 1=1';
+    $params = [];
+    $types = '';
+
+    if ($user_id !== null) {
+        $query .= ' AND user_id = ?';
+        $params[] = $user_id;
+        $types .= 'i';
+    }
+
+    if ($status !== null) {
+        $query .= ' AND status = ?';
+        $params[] = $status;
+        $types .= 's';
+    }
+
+    $query .= ' ORDER BY transaction_date DESC';
+
+    if ($limit !== null) {
+        $query .= ' LIMIT ? OFFSET ?';
+        $params[] = $limit;
+        $params[] = $offset;
+        $types .= 'ii';
+    }
+
+    $stmt = $db->prepare($query);
+    if (!$stmt) {
+        return [];
+    }
+
+    if (!empty($params)) {
+        $bind = array_merge([$types], $params);
+        $refs = [];
+        foreach ($bind as $k => $v) {
+            $refs[$k] = &$bind[$k];
+        }
+        call_user_func_array([$stmt, 'bind_param'], $refs);
+    }
+
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-// Get total revenue by date range
-function transactionGetRevenueByDateRange($startDate, $endDate) {
-    $result = fetchOne(
-        'SELECT SUM(amount) as revenue FROM transactions WHERE DATE(transaction_date) BETWEEN ? AND ? AND status = ?',
-        'sss',
-        [$startDate, $endDate, 'completed']
-    );
-    return $result['revenue'] ?? 0;
+function transactionGetByDateRange($start_date, $end_date, $status = null, $payment_method = null) {
+    $db = getConnection();
+    $query = 'SELECT * FROM transactions WHERE transaction_date BETWEEN ? AND ?';
+    $params = [$start_date, $end_date];
+    $types = 'ss';
+
+    if ($status !== null) {
+        $query .= ' AND status = ?';
+        $params[] = $status;
+        $types .= 's';
+    }
+
+    if ($payment_method !== null) {
+        $query .= ' AND payment_method = ?';
+        $params[] = $payment_method;
+        $types .= 's';
+    }
+
+    $query .= ' ORDER BY transaction_date DESC';
+    $stmt = $db->prepare($query);
+    if (!$stmt) {
+        return [];
+    }
+
+    $bind = array_merge([$types], $params);
+    $refs = [];
+    foreach ($bind as $k => $v) {
+        $refs[$k] = &$bind[$k];
+    }
+    call_user_func_array([$stmt, 'bind_param'], $refs);
+
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-// Get transactions by status
-function transactionGetByStatus($status) {
-    return fetchAll('SELECT * FROM transactions WHERE status = ? ORDER BY created_at DESC', 's', [$status]);
+function transactionGetTotalAmount($status = 'completed', $start_date = null, $end_date = null) {
+    $db = getConnection();
+    $query = 'SELECT SUM(amount) as total_amount FROM transactions WHERE status = ?';
+    $params = [transactionValidStatus($status)];
+    $types = 's';
+
+    if ($start_date !== null && $end_date !== null) {
+        $query .= ' AND transaction_date BETWEEN ? AND ?';
+        $params[] = $start_date;
+        $params[] = $end_date;
+        $types .= 'ss';
+    }
+
+    $stmt = $db->prepare($query);
+    if (!$stmt) {
+        return ['total_amount' => 0];
+    }
+
+    $bind = array_merge([$types], $params);
+    $refs = [];
+    foreach ($bind as $k => $v) {
+        $refs[$k] = &$bind[$k];
+    }
+    call_user_func_array([$stmt, 'bind_param'], $refs);
+
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
 }
 
-// Get transactions by payment method
-function transactionGetByPaymentMethod($method) {
-    return fetchAll('SELECT * FROM transactions WHERE payment_method = ? ORDER BY created_at DESC', 's', [$method]);
+function transactionGetPaginated($page = 1, $per_page = 20, $status = null, $payment_method = null) {
+    $offset = ($page - 1) * $per_page;
+    $db = getConnection();
+    $query = 'SELECT * FROM transactions WHERE 1=1';
+    $params = [];
+    $types = '';
+
+    if ($status !== null) {
+        $query .= ' AND status = ?';
+        $params[] = $status;
+        $types .= 's';
+    }
+
+    if ($payment_method !== null) {
+        $query .= ' AND payment_method = ?';
+        $params[] = $payment_method;
+        $types .= 's';
+    }
+
+    $query .= ' ORDER BY transaction_date DESC LIMIT ? OFFSET ?';
+    $params[] = $per_page;
+    $params[] = $offset;
+    $types .= 'ii';
+
+    $stmt = $db->prepare($query);
+    if (!$stmt) {
+        return [];
+    }
+
+    $bind = array_merge([$types], $params);
+    $refs = [];
+    foreach ($bind as $k => $v) {
+        $refs[$k] = &$bind[$k];
+    }
+    call_user_func_array([$stmt, 'bind_param'], $refs);
+
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-// Count transactions
-function transactionCount() {
-    return countRecords('transactions');
-}
-
-// Get total transaction amount
-function transactionGetTotal() {
-    $result = fetchOne('SELECT SUM(amount) as total FROM transactions WHERE status = ?', 's', ['completed']);
-    return $result['total'] ?? 0;
-}
-
-// Get average transaction amount
-function transactionGetAverage() {
-    $result = fetchOne('SELECT AVG(amount) as average FROM transactions WHERE status = ?', 's', ['completed']);
-    return $result['average'] ?? 0;
+function transactionGetStats() {
+    $db = getConnection();
+    $result = $db->query("SELECT 
+        COUNT(*) as total_transactions,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as completed_transactions,
+        SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END) as pending_transactions,
+        SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) as failed_transactions,
+        SUM(CASE WHEN status = 'refunded' THEN 1 ELSE 0 END) as refunded_transactions,
+        SUM(amount) as total_amount
+    FROM transactions");
+    return $result ? $result->fetch_assoc() : [];
 }
 ?>

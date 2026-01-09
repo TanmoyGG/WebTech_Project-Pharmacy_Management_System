@@ -1,108 +1,69 @@
 <?php
-// SystemConfig Model - System configuration data operations (Procedural)
+// SystemConfig Model - Procedural functions for system_config table
 
-// Get config by key
-function configGet($key) {
-    $result = fetchOne('SELECT value FROM system_config WHERE config_key = ?', 's', [$key]);
-    return $result ? $result['value'] : null;
-}
-
-// Get all configs
-function configGetAll() {
-    return fetchAll('SELECT config_key, value FROM system_config');
-}
-
-// Set config
-function configSet($key, $value) {
-    $existing = fetchOne('SELECT id FROM system_config WHERE config_key = ?', 's', [$key]);
-    
-    if ($existing) {
-        return updateRecord('system_config', ['value' => $value, 'updated_at' => date('Y-m-d H:i:s')], 'config_key = ?', [$key]);
-    } else {
-        $configData = [
-            'config_key' => $key,
-            'value' => $value,
-            'created_at' => date('Y-m-d H:i:s')
-        ];
-        return insertRecord('system_config', $configData);
+function systemConfigGet($config_key) {
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT * FROM system_config WHERE config_key = ?');
+    if (!$stmt) {
+        return false;
     }
+    $stmt->bind_param('s', $config_key);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_assoc();
 }
 
-// Delete config
-function configDelete($key) {
-    return deleteRecord('system_config', 'config_key = ?', [$key]);
-}
-
-// Get pharmacy settings
-function configGetPharmacySettings() {
-    $configs = configGetAll();
-    $settings = [];
-    
-    foreach ($configs as $config) {
-        $settings[$config['config_key']] = $config['value'];
+function systemConfigSet($config_key, $value) {
+    $db = getConnection();
+    $stmt = $db->prepare('INSERT INTO system_config (config_key, value, created_at, updated_at) VALUES (?, ?, NOW(), NOW()) ON DUPLICATE KEY UPDATE value = VALUES(value), updated_at = NOW()');
+    if (!$stmt) {
+        return false;
     }
-    
-    return $settings;
+    $stmt->bind_param('ss', $config_key, $value);
+    return $stmt->execute();
 }
 
-// Get tax rate
-function configGetTaxRate() {
-    $rate = configGet('tax_rate');
-    return $rate ? (float)$rate : 0;
+function systemConfigDelete($config_key) {
+    $db = getConnection();
+    $stmt = $db->prepare('DELETE FROM system_config WHERE config_key = ?');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('s', $config_key);
+    return $stmt->execute();
 }
 
-// Set tax rate
-function configSetTaxRate($rate) {
-    return configSet('tax_rate', $rate);
+function systemConfigGetAll() {
+    $db = getConnection();
+    $result = $db->query('SELECT * FROM system_config ORDER BY config_key ASC');
+    return $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 }
 
-// Get pharmacy name
-function configGetPharmacyName() {
-    return configGet('pharmacy_name') ?? 'Pharmacy';
+function systemConfigExists($config_key) {
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT config_key FROM system_config WHERE config_key = ? LIMIT 1');
+    if (!$stmt) {
+        return false;
+    }
+    $stmt->bind_param('s', $config_key);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    return $result->num_rows > 0;
 }
 
-// Set pharmacy name
-function configSetPharmacyName($name) {
-    return configSet('pharmacy_name', $name);
+function systemConfigGetByPrefix($prefix) {
+    $db = getConnection();
+    $like = $prefix . '%';
+    $stmt = $db->prepare('SELECT * FROM system_config WHERE config_key LIKE ? ORDER BY config_key ASC');
+    if (!$stmt) {
+        return [];
+    }
+    $stmt->bind_param('s', $like);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-// Get pharmacy contact
-function configGetContact() {
-    return configGet('contact_info');
-}
-
-// Set pharmacy contact
-function configSetContact($contact) {
-    return configSet('contact_info', $contact);
-}
-
-// Get pharmacy email
-function configGetEmail() {
-    return configGet('email');
-}
-
-// Set pharmacy email
-function configSetEmail($email) {
-    return configSet('email', $email);
-}
-
-// Get pharmacy phone
-function configGetPhone() {
-    return configGet('phone');
-}
-
-// Set pharmacy phone
-function configSetPhone($phone) {
-    return configSet('phone', $phone);
-}
-
-// Get pharmacy address
-function configGetAddress() {
-    return configGet('address');
-}
-
-// Set pharmacy address
-function configSetAddress($address) {
-    return configSet('address', $address);
+function systemConfigGetValue($config_key, $default = null) {
+    $config = systemConfigGet($config_key);
+    return $config ? $config['value'] : $default;
 }
 ?>
