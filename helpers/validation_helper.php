@@ -111,9 +111,5 @@ function validateFileUpload($file, $allowedTypes = [], $maxSize = 5242880) {
     return $errors;
 }
 
-// Escape string for database queries
-function escape($string) {
-    $conn = getConnection();
-    return $conn->real_escape_string($string);
-}
+// Note: database escaping is centralized in core/Database.php via escape()
 ?>
