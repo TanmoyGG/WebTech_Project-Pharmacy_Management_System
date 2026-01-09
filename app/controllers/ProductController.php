@@ -2,6 +2,9 @@
 // Product Controller - Product management operations
 // All functions follow procedural pattern: product_[action]()
 
+require_once __DIR__ . '/../models/Product.php';
+require_once __DIR__ . '/../models/Category.php';
+
 // Display product details
 function product_view() {
     $productId = getUrlParam(1);
@@ -11,7 +14,7 @@ function product_view() {
         redirectTo('customer/home');
     }
     
-    $product = getById('products', $productId);
+    $product = productGetById($productId);
     
     if (!$product) {
         setFlash('Product not found', 'error');
@@ -31,8 +34,8 @@ function product_edit() {
         redirectTo('inventory_manager/dashboard');
     }
     
-    $product = getById('products', $productId);
-    $categories = getAllRecords('categories');
+    $product = productGetById($productId);
+    $categories = categoryGetAll();
     
     render('inventory_manager/product_edit', ['product' => $product, 'categories' => $categories]);
 }
@@ -52,7 +55,7 @@ function product_delete() {
         redirectTo('inventory_manager/dashboard');
     }
     
-    deleteRecord('products', 'id = ?', [$productId]);
+    productDelete($productId);
     
     setFlash('Product deleted successfully', 'success');
     redirectTo('inventory_manager/dashboard');

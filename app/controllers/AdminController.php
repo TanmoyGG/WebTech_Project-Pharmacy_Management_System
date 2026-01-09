@@ -2,28 +2,27 @@
 // Admin Controller - Master Admin functionalities
 // All functions follow procedural pattern: admin_[action]()
 
+require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../models/Product.php';
+require_once __DIR__ . '/../models/Order.php';
+require_once __DIR__ . '/../models/Transaction.php';
+
 // Display admin dashboard
 function admin_dashboard() {
     requireRole('admin');
     
-    $totalUsers = countRecords('users');
-    $totalProducts = countRecords('products');
-    $totalOrders = countRecords('orders');
-    $totalRevenue = getTotalRevenue();
+    $userStats = userGetStats();
+    $productStats = productGetStats();
+    $orderStats = orderGetStats();
+    $totalRevenue = orderGetTotalRevenue();
     
     $data = [
-        'totalUsers' => $totalUsers,
-        'totalProducts' => $totalProducts,
-        'totalOrders' => $totalOrders,
+        'userStats' => $userStats,
+        'productStats' => $productStats,
+        'orderStats' => $orderStats,
         'totalRevenue' => $totalRevenue
     ];
     
     render('admin/dashboard', $data);
-}
-
-// Helper function: Get total revenue
-function getTotalRevenue() {
-    $result = fetchOne('SELECT SUM(total_amount) as revenue FROM orders WHERE status = ?', 's', ['completed']);
-    return $result['revenue'] ?? 0;
 }
 ?>

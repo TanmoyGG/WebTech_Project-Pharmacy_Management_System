@@ -305,4 +305,10 @@ function orderRecalculateTotals($order_id) {
     }
     return orderUpdate($order_id, $totals['total_amount']);
 }
+
+// Alias for total revenue (all completed orders)
+function orderGetTotalRevenue() {
+    $result = orderGetRevenue(null, null, 'completed');
+    return $result['total_revenue'] ?? 0;
+}
 ?>

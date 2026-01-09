@@ -40,9 +40,9 @@ function auth_loginProcess() {
     }
     
     // Check user exists
-    $user = getUserByEmail($email);
+    $user = userGetByEmail($email);
     
-    if (!$user || !verifyPassword($password, $user['password'])) {
+    if (!$user || !password_verify($password, $user['password'])) {
         setFlash('Invalid email or password', 'error');
         redirectTo('auth/login');
     }
@@ -96,7 +96,7 @@ function auth_registerProcess() {
         $errors['email'] = 'Email is required';
     } elseif (!validateEmail($email)) {
         $errors['email'] = 'Invalid email format';
-    } elseif (emailExists($email)) {
+    } elseif (userEmailExists($email)) {
         $errors['email'] = 'Email already exists';
     }
     
@@ -116,21 +116,10 @@ function auth_registerProcess() {
         redirectTo('auth/register');
     }
     
-    // Insert user
-    $hashedPassword = hashPassword($password);
+    // Create user account
+    $result = userCreate($name, $email, $password, $role);
     
-    $userData = [
-        'name' => $name,
-        'email' => $email,
-        'password' => $hashedPassword,
-        'role' => $role,
-        'status' => 'active',
-        'created_at' => date('Y-m-d H:i:s')
-    ];
-    
-    $userId = insertRecord('users', $userData);
-    
-    if ($userId) {
+    if ($result) {
         setFlash('Registration successful! Please login.', 'success');
         redirectTo('auth/login');
     } else {
@@ -162,25 +151,17 @@ function auth_forgotPasswordProcess() {
     }
     
     // Check user exists
-    if (!emailExists($email)) {
+    if (!userEmailExists($email)) {
         setFlash('If email exists, password reset link has been sent', 'info');
         redirectTo('auth/forgot_password');
     }
     
     // Generate reset token
     $resetToken = bin2hex(random_bytes(32));
-    $expiry = date('Y-m-d H:i:s', strtotime('+1 hour'));
     
-    // Update user with reset token
-    $user = getUserByEmail($email);
-    updateRecord('users', 
-        [
-            'reset_token' => $resetToken,
-            'reset_expiry' => $expiry
-        ], 
-        'id = ?',
-        [$user['id']]
-    );
+    // Get user and set reset token
+    $user = userGetByEmail($email);
+    userSetResetToken($user['id'], $resetToken);
     
     // TODO: Send email with reset link
     
@@ -207,7 +188,7 @@ function auth_changePasswordProcess() {
     $confirmPassword = getPost('confirm_password', '');
     
     $userId = getCurrentUserId();
-    $user = getById('users', $userId);
+    $user = userGetById($userId);
     
     // Validate current password
     if (!verifyPassword($currentPassword, $user['password'])) {
@@ -227,8 +208,7 @@ function auth_changePasswordProcess() {
     }
     
     // Update password
-    $hashedPassword = hashPassword($newPassword);
-    updateRecord('users', ['password' => $hashedPassword], 'id = ?', [$userId]);
+    userUpdatePassword($userId, $newPassword);
     
     setFlash('Password changed successfully', 'success');
     redirectTo('profile/view');
@@ -241,8 +221,4 @@ function auth_logout() {
     redirectTo('home/index');
 }
 
-// Helper function: Get user by email
-function getUserByEmail($email) {
-    return fetchOne('SELECT * FROM users WHERE email = ?', 's', [$email]);
-}
 ?>

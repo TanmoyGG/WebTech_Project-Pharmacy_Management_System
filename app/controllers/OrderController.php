@@ -2,6 +2,10 @@
 // Order Controller - Order processing and management
 // All functions follow procedural pattern: order_[action]()
 
+require_once __DIR__ . '/../models/Order.php';
+require_once __DIR__ . '/../models/OrderItem.php';
+require_once __DIR__ . '/../models/Product.php';
+
 // Display order details
 function order_view() {
     requireAuth();
@@ -13,7 +17,7 @@ function order_view() {
         redirectTo('customer/order_history');
     }
     
-    $order = getById('orders', $orderId);
+    $order = orderGetById($orderId);
     
     if (!$order) {
         setFlash('Order not found', 'error');
@@ -28,11 +32,7 @@ function order_view() {
         redirectTo('customer/order_history');
     }
     
-    $orderItems = fetchAll(
-        'SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = ?',
-        'i',
-        [$orderId]
-    );
+    $orderItems = orderItemsGetByOrder($orderId);
     
     $data = [
         'order' => $order,
@@ -53,7 +53,7 @@ function order_updateStatus() {
     $orderId = getPost('order_id', '');
     $status = getPost('status', '');
     
-    updateRecord('orders', ['status' => $status], 'id = ?', [$orderId]);
+    orderSetStatus($orderId, $status);
     
     setFlash('Order status updated successfully', 'success');
     redirectTo('admin/transaction_history');
@@ -74,7 +74,7 @@ function order_cancel() {
         redirectTo('customer/order_history');
     }
     
-    $order = getById('orders', $orderId);
+    $order = orderGetById($orderId);
     $userId = getCurrentUserId();
     
     if ($order['user_id'] != $userId) {
@@ -87,7 +87,7 @@ function order_cancel() {
         redirectTo('customer/order_history');
     }
     
-    updateRecord('orders', ['status' => 'cancelled'], 'id = ?', [$orderId]);
+    orderSetStatus($orderId, 'cancelled');
     
     setFlash('Order cancelled successfully', 'success');
     redirectTo('customer/order_history');
