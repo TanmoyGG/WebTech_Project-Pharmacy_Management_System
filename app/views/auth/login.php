@@ -3,7 +3,7 @@
 <div class="card" style="max-width: 480px; margin: 40px auto;">
 	<div class="card-header">Login</div>
 	<div class="card-body">
-		<form id="loginForm" action="<?php echo BASE_URL; ?>/auth/login" method="POST" onsubmit="return validateForm('loginForm');">
+		<form id="loginForm" action="<?php echo BASE_URL; ?>/auth/loginProcess" method="POST" onsubmit="return validateForm('loginForm');">
 			<div class="form-group">
 				<label for="email">Email</label>
 				<input type="email" id="email" name="email" placeholder="you@example.com" required>
