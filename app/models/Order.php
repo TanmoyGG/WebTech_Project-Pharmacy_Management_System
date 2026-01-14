@@ -1,6 +1,11 @@
 <?php
 // Order Model - Procedural database functions for unified orders table
 
+// Guard against multiple inclusions
+if (function_exists('orderValidStatus')) {
+    return;
+}
+
 function orderValidStatus($status) {
     $allowed = ['pending', 'processing', 'completed', 'cancelled', 'shipped', 'delivered'];
     return in_array($status, $allowed) ? $status : 'pending';
@@ -26,21 +31,21 @@ function orderGetById($order_id) {
     return $stmt->get_result()->fetch_assoc();
 }
 
-function orderCreate($user_id, $total_amount, $status = 'pending', $delivery_address = null, $cart_id = null) {
+function orderCreate($user_id, $total_amount, $status = 'pending', $delivery_address = null) {
     $db = getConnection();
     $status = orderValidStatus($status);
-    $stmt = $db->prepare('INSERT INTO orders (user_id, total_amount, status, delivery_address, cart_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())');
+    $stmt = $db->prepare('INSERT INTO orders (user_id, total_amount, status, delivery_address) VALUES (?, ?, ?, ?)');
     if (!$stmt) {
         return false;
     }
-    $stmt->bind_param('idssi', $user_id, $total_amount, $status, $delivery_address, $cart_id);
+    $stmt->bind_param('idss', $user_id, $total_amount, $status, $delivery_address);
     if ($stmt->execute()) {
         return $db->insert_id;
     }
     return false;
 }
 
-function orderUpdate($order_id, $total_amount = null, $status = null, $delivery_address = null, $cart_id = null) {
+function orderUpdate($order_id, $total_amount = null, $status = null, $delivery_address = null) {
     $db = getConnection();
     $updates = [];
     $params = [];
@@ -62,12 +67,6 @@ function orderUpdate($order_id, $total_amount = null, $status = null, $delivery_
         $updates[] = 'delivery_address = ?';
         $params[] = $delivery_address;
         $types .= 's';
-    }
-
-    if ($cart_id !== null) {
-        $updates[] = 'cart_id = ?';
-        $params[] = $cart_id;
-        $types .= 'i';
     }
 
     if (empty($updates)) {
