@@ -1,8 +1,26 @@
 <?php
 // Session Helper Functions (Procedural)
 
+// Check and refresh session timeout
+function checkSessionTimeout() {
+    $timeout = defined('SESSION_TIMEOUT') ? SESSION_TIMEOUT : 3600;
+    
+    if (isset($_SESSION['last_activity'])) {
+        $inactive = time() - $_SESSION['last_activity'];
+        if ($inactive > $timeout) {
+            session_destroy();
+            session_start();
+            return false;
+        }
+    }
+    
+    $_SESSION['last_activity'] = time();
+    return true;
+}
+
 // Check if user is logged in
 function userIsLoggedIn() {
+    checkSessionTimeout();
     return isset($_SESSION['user_id']) && !empty($_SESSION['user_id']);
 }
 
