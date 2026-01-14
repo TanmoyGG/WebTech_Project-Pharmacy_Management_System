@@ -1,6 +1,11 @@
 <?php
 // Cart Model - Procedural functions for carts and cart_items tables
 
+// Guard against multiple inclusions
+if (function_exists('cartValidStatus')) {
+    return;
+}
+
 function cartValidStatus($status) {
     $allowed = ['active', 'checked_out', 'abandoned'];
     return in_array($status, $allowed) ? $status : 'active';
@@ -62,12 +67,11 @@ function cartSetStatus($cart_id, $status) {
 
 function cartAddItem($cart_id, $product_id, $quantity, $price) {
     $db = getConnection();
-    $subtotal = $quantity * $price;
-    $stmt = $db->prepare('INSERT INTO cart_items (cart_id, product_id, quantity, price, subtotal) VALUES (?, ?, ?, ?, ?)');
+    $stmt = $db->prepare('INSERT INTO cart_items (cart_id, product_id, quantity, price) VALUES (?, ?, ?, ?)');
     if (!$stmt) {
         return false;
     }
-    $stmt->bind_param('iiidd', $cart_id, $product_id, $quantity, $price, $subtotal);
+    $stmt->bind_param('iiid', $cart_id, $product_id, $quantity, $price);
     if ($stmt->execute()) {
         return $db->insert_id;
     }
@@ -155,7 +159,7 @@ function cartDelete($cart_id) {
 
 function cartGetItems($cart_id) {
     $db = getConnection();
-    $stmt = $db->prepare('SELECT * FROM cart_items WHERE cart_id = ? ORDER BY id ASC');
+    $stmt = $db->prepare('SELECT ci.*, p.name as product_name, (ci.quantity * ci.price) as subtotal FROM cart_items ci JOIN products p ON ci.product_id = p.id WHERE ci.cart_id = ? ORDER BY ci.id ASC');
     if (!$stmt) {
         return [];
     }
@@ -166,17 +170,30 @@ function cartGetItems($cart_id) {
 
 function cartCalculateTotals($cart_id) {
     $db = getConnection();
-    $stmt = $db->prepare('SELECT COUNT(*) as item_count, SUM(quantity) as total_quantity, SUM(subtotal) as total_amount FROM cart_items WHERE cart_id = ?');
+    $stmt = $db->prepare('SELECT COUNT(*) as item_count, SUM(quantity) as total_quantity, SUM(quantity * price) as subtotal FROM cart_items WHERE cart_id = ?');
     if (!$stmt) {
-        return false;
+        return ['item_count' => 0, 'total_quantity' => 0, 'subtotal' => 0, 'tax' => 0, 'total' => 0];
     }
     $stmt->bind_param('i', $cart_id);
     $stmt->execute();
     $data = $stmt->get_result()->fetch_assoc();
-    if (!$data) {
-        return ['item_count' => 0, 'total_quantity' => 0, 'total_amount' => 0];
+    
+    if (!$data || $data['item_count'] == 0) {
+        return ['item_count' => 0, 'total_quantity' => 0, 'subtotal' => 0, 'tax' => 0, 'total' => 0];
     }
-    return $data;
+    
+    $subtotal = (float) ($data['subtotal'] ?? 0);
+    $tax_rate = 0.05;  // 5% tax
+    $tax = $subtotal * $tax_rate;
+    $total = $subtotal + $tax;
+    
+    return [
+        'item_count' => $data['item_count'],
+        'total_quantity' => $data['total_quantity'],
+        'subtotal' => $subtotal,
+        'tax' => $tax,
+        'total' => $total
+    ];
 }
 
 function cartGetByStatus($status, $limit = null, $offset = 0) {
