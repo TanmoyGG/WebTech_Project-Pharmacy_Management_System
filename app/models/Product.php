@@ -4,7 +4,11 @@
 
 // Ensure database helpers are loaded for static analysis and runtime
 require_once __DIR__ . '/../../core/Database.php';
-use mysqli;
+
+// Guard against multiple inclusions
+if (function_exists('productGetById')) {
+    return;
+}
 
 // Get product by ID
 function productGetById($product_id) {
@@ -300,35 +304,7 @@ function productGetStats() {
     return $result->fetch_assoc();
 }
 
-// Get revenue by product
-function productGetRevenue($product_id) {
-    $db = getConnection();
-    
-    $stmt = $db->prepare("SELECT SUM(oi.quantity * oi.price) as total_revenue 
-                          FROM order_items oi 
-                          WHERE oi.product_id = ?");
-    $stmt->bind_param('i', $product_id);
-    $stmt->execute();
-    
-    return $stmt->get_result()->fetch_assoc();
-}
 
-// Get product statistics
-function productGetStats() {
-    $db = getConnection();
-    
-    $result = $db->query("SELECT 
-                            COUNT(*) as total_products,
-                            SUM(CASE WHEN status = 'available' THEN 1 ELSE 0 END) as available_products,
-                            SUM(CASE WHEN status = 'discontinued' THEN 1 ELSE 0 END) as discontinued_products,
-                            AVG(price) as avg_price,
-                            MIN(price) as min_price,
-                            MAX(price) as max_price,
-                            SUM(quantity) as total_stock
-                          FROM products");
-    
-    return $result->fetch_assoc();
-}
 
 // Get revenue by product
 function productGetRevenue($product_id) {
@@ -347,9 +323,5 @@ function productGetRevenue($product_id) {
 function productExists($product_id) {
     $product = productGetById($product_id);
     return $product !== null;
-}
-?>
-        [$limit]
-    );
 }
 ?>
