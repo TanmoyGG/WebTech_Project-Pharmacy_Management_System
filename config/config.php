@@ -30,6 +30,10 @@ define('RECORDS_PER_PAGE', 10);
 // Set timezone
 date_default_timezone_set(DEFAULT_TIMEZONE);
 
+// Session Configuration
+define('SESSION_TIMEOUT', 3600);  // 1 hour in seconds (3600 seconds)
+ini_set('session.gc_maxlifetime', SESSION_TIMEOUT);
+
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
