@@ -2,6 +2,11 @@
 // User Model - Procedural Database Functions
 // Handles all user-related database operations for unified users table
 
+// Guard against multiple inclusions
+if (function_exists('userGetById')) {
+    return;
+}
+
 // Get user by ID
 function userGetById($user_id) {
     $db = getConnection();
