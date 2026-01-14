@@ -38,8 +38,8 @@
                     
                     <!-- Customer Menu -->
                     <?php else: ?>
-                        <a href="<?php echo BASE_URL; ?>/customer/dashboard">Home</a>
-                        <a href="<?php echo BASE_URL; ?>/customer/browse_medicines">Browse Medicines</a>
+                        <a href="<?php echo BASE_URL; ?>/customer/home">Home</a>
+                        <a href="<?php echo BASE_URL; ?>/customer/browseMedicines">Browse Medicines</a>
                         <a href="<?php echo BASE_URL; ?>/customer/cart">
                             Cart
                             <?php 
@@ -48,7 +48,7 @@
                                 <span class="badge"><?php echo $cartCount; ?></span>
                             <?php endif; ?>
                         </a>
-                        <a href="<?php echo BASE_URL; ?>/customer/order_history">My Orders</a>
+                        <a href="<?php echo BASE_URL; ?>/customer/orderHistory">My Orders</a>
                     <?php endif; ?>
                     
                     <!-- User Dropdown -->
