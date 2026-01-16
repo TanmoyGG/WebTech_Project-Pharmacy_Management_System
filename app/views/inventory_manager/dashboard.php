@@ -11,32 +11,39 @@ $expiringProducts = $expiringProducts ?? [];
     <p class="text-muted">Welcome to your inventory management dashboard</p>
 
     <!-- Quick Stats -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 30px 0;">
+    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin: 30px 0;">
         <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
             <div class="card-body">
-                <h3 style="margin: 0 0 10px 0; font-size: 36px;"><?php echo $productStats['total'] ?? 0; ?></h3>
-                <p style="margin: 0; opacity: 0.9;">Total Products</p>
+                <h3 style="margin: 0 0 8px 0; font-size: 28px;"><?php echo $productStats['total'] ?? 0; ?></h3>
+                <p style="margin: 0; opacity: 0.9; font-size: 13px;">Total Products</p>
             </div>
         </div>
 
         <div class="card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
             <div class="card-body">
-                <h3 style="margin: 0 0 10px 0; font-size: 36px;"><?php echo $productStats['low_stock'] ?? 0; ?></h3>
-                <p style="margin: 0; opacity: 0.9;">Low Stock Items</p>
+                <h3 style="margin: 0 0 8px 0; font-size: 28px;"><?php echo $productStats['low_stock'] ?? 0; ?></h3>
+                <p style="margin: 0; opacity: 0.9; font-size: 13px;">Low Stock Items</p>
             </div>
         </div>
 
         <div class="card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
             <div class="card-body">
-                <h3 style="margin: 0 0 10px 0; font-size: 36px;"><?php echo $productStats['expiring_soon'] ?? 0; ?></h3>
-                <p style="margin: 0; opacity: 0.9;">Expiring Soon</p>
+                <h3 style="margin: 0 0 8px 0; font-size: 28px;"><?php echo $productStats['expiring_soon'] ?? 0; ?></h3>
+                <p style="margin: 0; opacity: 0.9; font-size: 13px;">Expiring Soon</p>
             </div>
         </div>
 
-        <div class="card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white;">
+        <div class="card" style="background: linear-gradient(135deg, #22733d 0%, #38f9d7 100%); color: white;">
             <div class="card-body">
-                <h3 style="margin: 0 0 10px 0; font-size: 36px;"><?php echo $productStats['available'] ?? 0; ?></h3>
-                <p style="margin: 0; opacity: 0.9;">Available Products</p>
+                <h3 style="margin: 0 0 8px 0; font-size: 28px;"><?php echo $productStats['available'] ?? 0; ?></h3>
+                <p style="margin: 0; opacity: 0.9; font-size: 13px;">Available Products</p>
+            </div>
+        </div>
+
+        <div class="card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white;">
+            <div class="card-body">
+                <h3 style="margin: 0 0 8px 0; font-size: 28px;"><?php echo $productStats['total_stock'] ?? 0; ?></h3>
+                <p style="margin: 0; opacity: 0.9; font-size: 13px;">Units in Stock</p>
             </div>
         </div>
     </div>
