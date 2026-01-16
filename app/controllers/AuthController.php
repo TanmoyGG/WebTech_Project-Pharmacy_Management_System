@@ -3,6 +3,7 @@
 // All functions follow procedural pattern: auth_[action]()
 
 require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../../helpers/cookie_helper.php';
 
 // Display login page
 function auth_login() {
@@ -65,6 +66,14 @@ function auth_loginProcess() {
     
     // Set session and redirect
     setUserSession($user['id'], $user['name'], $user['email'], $user['role']);
+    
+    // Handle "Remember Me" functionality
+    $remember_me = getPost('remember_me');
+    if ($remember_me) {
+        // Generate a simple token for remember me
+        $token = hash('sha256', $user['id'] . $user['email'] . time() . rand(1000, 9999));
+        setCookieRememberMe($user['id'], $user['email'], $token);
+    }
     
     setFlash('Login successful', 'success');
     
@@ -233,6 +242,7 @@ function auth_changePasswordProcess() {
 // Logout
 function auth_logout() {
     destroyUserSession();
+    clearCookieRememberMe(); // Clear "Remember Me" cookie
     setFlash('Logged out successfully', 'success');
     redirectTo('home/index');
 }
