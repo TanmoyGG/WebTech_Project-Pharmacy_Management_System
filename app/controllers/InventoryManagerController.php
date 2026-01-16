@@ -45,7 +45,7 @@ function inventory_manager_products() {
     
     $search = getGet('search', '');
     $category_filter = getGet('category', '');
-    $status_filter = getGet('status', 'available');
+    $status_filter = getGet('status', 'all');
     
     $db = getConnection();
     
@@ -493,6 +493,39 @@ function inventory_manager_shipOrder() {
     redirectTo('inventory_manager/orderDetails?id=' . $order_id);
 }
 
+// Complete order (change status from shipped to completed)
+function inventory_manager_completeOrder() {
+    requireRole('inventory_manager');
+    
+    if (!isPost()) {
+        redirectTo('inventory_manager/orders');
+    }
+    
+    $order_id = (int) getPost('order_id');
+    
+    $db = getConnection();
+    
+    // Get order and verify it's shipped
+    $stmt = $db->prepare('SELECT * FROM orders WHERE id = ? AND status = "shipped"');
+    $stmt->bind_param('i', $order_id);
+    $stmt->execute();
+    $order = $stmt->get_result()->fetch_assoc();
+    
+    if (!$order) {
+        setFlash('Order not found or not ready to complete', 'error');
+        redirectTo('inventory_manager/orders');
+    }
+    
+    // Update order status to completed
+    $newStatus = 'completed';
+    $updateStmt = $db->prepare('UPDATE orders SET status = ? WHERE id = ?');
+    $updateStmt->bind_param('si', $newStatus, $order_id);
+    $updateStmt->execute();
+    
+    setFlash('Order marked as completed!', 'success');
+    redirectTo('inventory_manager/orderDetails?id=' . $order_id);
+}
+
 // Cancel order (change status to cancelled and restore inventory)
 function inventory_manager_cancelOrder() {
     requireRole('inventory_manager');
@@ -540,5 +573,51 @@ function inventory_manager_cancelOrder() {
     
     setFlash('Order cancelled successfully!', 'success');
     redirectTo('inventory_manager/orders');
+}
+
+// View low stock products
+function inventory_manager_lowStock() {
+    requireRole('inventory_manager');
+    
+    $lowStockProducts = productGetLowStock();
+    
+    $data = [
+        'lowStockProducts' => $lowStockProducts
+    ];
+    
+    render('inventory_manager/low_stock', $data);
+}
+
+// View expiring products
+function inventory_manager_expiringItems() {
+    requireRole('inventory_manager');
+    
+    $expiringProducts = productGetExpiring(30);
+    
+    $data = [
+        'expiringProducts' => $expiringProducts
+    ];
+    
+    render('inventory_manager/expiring_items', $data);
+}
+
+// View expired products
+function inventory_manager_expiredItems() {
+    requireRole('inventory_manager');
+    
+    $db = getConnection();
+    
+    // Get all expired products (expiry_date < today)
+    $today = date('Y-m-d');
+    $stmt = $db->prepare("SELECT * FROM products WHERE expiry_date < ? ORDER BY expiry_date ASC");
+    $stmt->bind_param('s', $today);
+    $stmt->execute();
+    $expiredProducts = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    
+    $data = [
+        'expiredProducts' => $expiredProducts
+    ];
+    
+    render('inventory_manager/expired_items', $data);
 }
 ?>
