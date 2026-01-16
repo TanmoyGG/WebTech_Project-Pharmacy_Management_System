@@ -23,12 +23,33 @@ function customer_home() {
 function customer_browseMedicines() {
     requireAuth(); // Ensure user is logged in
     
-    $page = getGet('page', 1);
     $category_id = getGet('category', null);
+    $search_query = getGet('q', '');
     
-    $products = productGetPaginated($page, RECORDS_PER_PAGE, $category_id);
+    // Get all products (not paginated for browse view) with optional filtering
+    if ($search_query) {
+        // Search products by name, generic_name, or description
+        $products = productSearch($search_query);
+        // Also track the search in cookies
+        addSearchHistory($search_query);
+    } else {
+        // Get all products, optionally filtered by category
+        $db = getConnection();
+        if ($category_id) {
+            $stmt = $db->prepare('SELECT * FROM products WHERE category_id = ? AND status = "available" ORDER BY name ASC');
+            $stmt->bind_param('i', $category_id);
+        } else {
+            $stmt = $db->prepare('SELECT * FROM products WHERE status = "available" ORDER BY name ASC');
+        }
+        $stmt->execute();
+        $products = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    }
     
-    render('customer/browse_medicines', ['products' => $products]);
+    render('customer/browse_medicines', [
+        'products' => $products,
+        'search_query' => $search_query,
+        'selected_category' => $category_id
+    ]);
 }
 
 // Add to cart
@@ -57,10 +78,11 @@ function customer_addToCart() {
         setFlash('Product already in cart', 'info');
     } else {
         cartAddItem($cart_id, $product_id, $quantity, $product['price']);
-        setFlash('Product added to cart', 'success');
+        setFlash('Product added to cart successfully! View your cart anytime.', 'success');
     }
     
-    redirectTo('customer/cart');
+    // Redirect back to browse page (or home if no referrer)
+    redirectTo('customer/browseMedicines');
 }
 
 // View cart
@@ -76,6 +98,77 @@ function customer_cart() {
         'items' => $items,
         'totals' => $totals
     ]);
+}
+
+// Remove item from cart
+function customer_removeFromCart() {
+    requireAuth();
+    
+    if (!isPost()) {
+        redirectTo('customer/cart');
+    }
+    
+    $cart_item_id = getPost('cart_item_id');
+    $user_id = getUserData('id');
+    $cart_id = cartGetOrCreate($user_id);
+    
+    // Verify the item belongs to this user's cart
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT id FROM cart_items WHERE id = ? AND cart_id = ?');
+    $stmt->bind_param('ii', $cart_item_id, $cart_id);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    
+    if ($result) {
+        cartRemoveItem($cart_item_id);
+        setFlash('Item removed from cart', 'success');
+    } else {
+        setFlash('Item not found in your cart', 'error');
+    }
+    
+    redirectTo('customer/cart');
+}
+
+// Update cart item quantity
+function customer_updateCartQuantity() {
+    requireAuth();
+    
+    if (!isPost()) {
+        redirectTo('customer/cart');
+    }
+    
+    $cart_item_id = getPost('cart_item_id');
+    $quantity = (int) getPost('quantity', 1);
+    $user_id = getUserData('id');
+    $cart_id = cartGetOrCreate($user_id);
+    
+    // Validate quantity
+    if ($quantity < 1) {
+        setFlash('Invalid quantity', 'error');
+        redirectTo('customer/cart');
+    }
+    
+    // Verify the item belongs to this user's cart
+    $db = getConnection();
+    $stmt = $db->prepare('SELECT id, product_id FROM cart_items WHERE id = ? AND cart_id = ?');
+    $stmt->bind_param('ii', $cart_item_id, $cart_id);
+    $stmt->execute();
+    $result = $stmt->get_result()->fetch_assoc();
+    
+    if ($result) {
+        // Check if quantity exceeds available stock
+        $product = productGetById($result['product_id']);
+        if ($product && $quantity > $product['quantity']) {
+            setFlash('Quantity exceeds available stock', 'error');
+        } else {
+            cartUpdateItemQuantity($cart_item_id, $quantity);
+            setFlash('Cart updated successfully', 'success');
+        }
+    } else {
+        setFlash('Item not found in your cart', 'error');
+    }
+    
+    redirectTo('customer/cart');
 }
 
 // Checkout page
@@ -198,7 +291,99 @@ function customer_orderDetails() {
     ]);
 }
 
-// Product search
+// Product search - AJAX API endpoint (returns JSON)
+function customer_searchMedicines() {
+    header('Content-Type: application/json');
+    
+    try {
+        // Check authentication without redirect (for AJAX requests)
+        if (!isLoggedIn()) {
+            http_response_code(401);
+            echo json_encode([
+                'success' => false,
+                'error' => 'Unauthorized'
+            ]);
+            exit;
+        }
+        
+        $search_query = getGet('q', '');
+        $products = [];
+        
+        $db = getConnection();
+        if (!$db) {
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'error' => 'Database connection failed'
+            ]);
+            exit;
+        }
+        
+        if (strlen($search_query) >= 2) {
+            // Search products by name, generic_name, or description (partial match)
+            $search_param = '%' . $search_query . '%';
+            
+            $stmt = $db->prepare('
+                SELECT id, name, generic_name, description, price, quantity 
+                FROM products 
+                WHERE status = "available" AND (
+                    name LIKE ? OR 
+                    generic_name LIKE ? OR 
+                    description LIKE ?
+                )
+                ORDER BY name ASC
+                LIMIT 20
+            ');
+            
+            if (!$stmt) {
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Query prepare failed: ' . $db->error
+                ]);
+                exit;
+            }
+            
+            $stmt->bind_param('sss', $search_param, $search_param, $search_param);
+            $stmt->execute();
+            $products = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+        } else {
+            // If search is empty, return all products
+            $stmt = $db->prepare('SELECT id, name, generic_name, description, price, quantity FROM products WHERE status = "available" ORDER BY name ASC LIMIT 20');
+            
+            if (!$stmt) {
+                http_response_code(500);
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Query prepare failed: ' . $db->error
+                ]);
+                exit;
+            }
+            
+            $stmt->execute();
+            $result = $stmt->get_result();
+            $products = $result->fetch_all(MYSQLI_ASSOC);
+        }
+        
+        // Return JSON response
+        echo json_encode([
+            'success' => true,
+            'count' => count($products),
+            'products' => $products
+        ]);
+        exit;
+        
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode([
+            'success' => false,
+            'error' => 'Server error: ' . $e->getMessage()
+        ]);
+        exit;
+    }
+}
+
+// Product search - old function (for product_search page)
 function customer_productSearch() {
     requireAuth(); // Ensure user is logged in
     
