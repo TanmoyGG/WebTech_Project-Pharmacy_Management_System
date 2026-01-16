@@ -1,9 +1,6 @@
 <?php 
 $pageTitle = 'Customer Home';
 include_once __DIR__ . '/../layouts/header.php';
-
-// Basic product stats for quick glance
-$stats = function_exists('productGetStats') ? productGetStats() : null;
 ?>
 
 <div class="card">
@@ -17,23 +14,6 @@ $stats = function_exists('productGetStats') ? productGetStats() : null;
 		</div>
 	</div>
 </div>
-
-<?php if ($stats): ?>
-<div class="stats-grid">
-	<div class="stat-box">
-		<h3><?php echo (int) $stats['total_products']; ?></h3>
-		<p>Total products</p>
-	</div>
-	<div class="stat-box">
-		<h3><?php echo (int) $stats['available_products']; ?></h3>
-		<p>Available now</p>
-	</div>
-	<div class="stat-box">
-		<h3><?php echo (int) $stats['total_stock']; ?></h3>
-		<p>Units in stock</p>
-	</div>
-</div>
-<?php endif; ?>
 
 <div class="card">
 	<div class="card-header">Featured medicines</div>
