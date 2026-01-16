@@ -28,16 +28,24 @@ $orders = $orders ?? [];
                                 <td><?php echo (int) ($order['item_count'] ?? 1); ?> items</td>
                                 <td>৳ <?php echo number_format($order['total_amount'] ?? 0, 2); ?></td>
                                 <td>
-                                    <?php 
-                                    $status = $order['status'] ?? 'pending';
-                                    $badge_class = match($status) {
-                                        'completed' => 'badge-success',
-                                        'cancelled' => 'badge-danger',
-                                        'confirmed' => 'badge-info',
-                                        default => 'badge-warning'
-                                    };
-                                    ?>
-                                    <span class="badge <?php echo $badge_class; ?>" style="padding: 5px 10px;"><?php echo ucfirst($status); ?></span>
+                                    <span style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;
+                                        background-color: <?php 
+                                            if (($order['status'] ?? 'pending') === 'pending') echo '#f8d7da';
+                                            elseif (($order['status'] ?? 'pending') === 'confirmed') echo '#fff3cd';
+                                            elseif (($order['status'] ?? 'pending') === 'shipped') echo '#d1e7dd';
+                                            elseif (($order['status'] ?? 'pending') === 'completed') echo '#c3e6cb';
+                                            else echo '#e82015';
+                                        ?>;
+                                        color: <?php 
+                                            if (($order['status'] ?? 'pending') === 'pending') echo '#842029';
+                                            elseif (($order['status'] ?? 'pending') === 'confirmed') echo '#856404';
+                                            elseif (($order['status'] ?? 'pending') === 'shipped') echo '#0f5132';
+                                            elseif (($order['status'] ?? 'pending') === 'completed') echo '#155724';
+                                            else echo '#e9e9e9';
+                                        ?>;
+                                    ">
+                                        <?php echo ucfirst($order['status'] ?? 'pending'); ?>
+                                    </span>
                                 </td>
                                 <td>
                                     <a href="<?php echo BASE_URL; ?>/customer/orderDetails?id=<?php echo (int) $order['id']; ?>" class="btn btn-sm btn-primary">View</a>
