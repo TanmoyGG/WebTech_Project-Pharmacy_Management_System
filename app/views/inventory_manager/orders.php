@@ -56,7 +56,7 @@ $statusCounts = $statusCounts ?? [];
                     </thead>
                     <tbody>
                         <?php foreach ($orders as $order): ?>
-                            <tr style="border-bottom: 1px solid #eee; hover-color: #f9f9f9;">
+                            <tr style="border-bottom: 1px solid #eee;">
                                 <td style="padding: 12px;"><strong>#<?php echo $order['id']; ?></strong></td>
                                 <td style="padding: 12px;">
                                     <div><?php echo htmlspecialchars($order['customer_name']); ?></div>
@@ -71,18 +71,18 @@ $statusCounts = $statusCounts ?? [];
                                 <td style="padding: 12px;">
                                     <span style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;
                                         background-color: <?php 
-                                            if ($order['status'] === 'pending') echo '#fff3cd';
-                                            elseif ($order['status'] === 'confirmed') echo '#cfe2ff';
+                                            if ($order['status'] === 'pending') echo '#f8d7da';
+                                            elseif ($order['status'] === 'confirmed') echo '#fff3cd';
                                             elseif ($order['status'] === 'shipped') echo '#d1e7dd';
-                                            elseif ($order['status'] === 'completed') echo '#d1e7dd';
-                                            else echo '#f8d7da';
+                                            elseif ($order['status'] === 'completed') echo '#c3e6cb';
+                                            else echo '#ed140d';
                                         ?>;
                                         color: <?php 
-                                            if ($order['status'] === 'pending') echo '#856404';
-                                            elseif ($order['status'] === 'confirmed') echo '#084298';
+                                            if ($order['status'] === 'pending') echo '#842029';
+                                            elseif ($order['status'] === 'confirmed') echo '#856404';
                                             elseif ($order['status'] === 'shipped') echo '#0f5132';
-                                            elseif ($order['status'] === 'completed') echo '#0f5132';
-                                            else echo '#842029';
+                                            elseif ($order['status'] === 'completed') echo '#155724';
+                                            else echo '#fffcfc';
                                         ?>;
                                     ">
                                         <?php echo ucfirst($order['status']); ?>
