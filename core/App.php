@@ -56,7 +56,13 @@ function routeRequest($urlArray) {
         if (function_exists($functionName)) {
             call_user_func_array($functionName, $params);
         } else {
-            showError(404, "Method not found: " . $functionName);
+            // Debug: log available functions for this controller
+            $availableFunctions = get_defined_functions();
+            $controllerFunctions = array_filter($availableFunctions['user'], function($f) use ($controller) {
+                return strpos($f, strtolower($controller) . '_') === 0;
+            });
+            
+            showError(404, "Method not found: " . $functionName . ". Available: " . implode(', ', $controllerFunctions));
         }
     } else {
         showError(404, "Controller not found: " . $controller);
