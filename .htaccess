@@ -1,8 +1,16 @@
-# Apache configuration
+# Disable directory listing
+Options -Indexes
+
+# Apache configuration - Route all requests to index.php
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    RewriteBase /WebTech_Project-Pharmacy_Management_System/public/
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteBase /WebTech_Project-Pharmacy_Management_System/
+    
+    # Allow real files and directories to be accessed directly
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+    
+    # Route everything else to index.php
     RewriteRule ^(.*)$ index.php/$1 [L]
 </IfModule>
