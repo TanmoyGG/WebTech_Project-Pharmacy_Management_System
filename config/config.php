@@ -7,7 +7,7 @@ define('APP_NAME', 'Pharmacy Management System');
 // Base URL
 $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http';
 $serverName = $_SERVER['HTTP_HOST'];
-define('BASE_URL', $protocol . '://' . $serverName . '/WebTech_Project-Pharmacy_Management_System/public/');
+define('BASE_URL', $protocol . '://' . $serverName . '/WebTech_Project-Pharmacy_Management_System/');
 
 // Database Configuration
 define('DB_HOST', 'localhost');
