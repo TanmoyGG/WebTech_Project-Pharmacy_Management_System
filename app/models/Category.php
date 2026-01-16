@@ -165,14 +165,3 @@ function categoryExists($category_id) {
     return $category !== null;
 }
 ?>
-
-// Search categories
-function categorySearch($searchTerm) {
-    return fetchAll('SELECT * FROM categories WHERE name LIKE ? OR description LIKE ?', 'ss', ["%$searchTerm%", "%$searchTerm%"]);
-}
-
-// Count total categories
-function categoryCount() {
-    return countRecords('categories');
-}
-?>
