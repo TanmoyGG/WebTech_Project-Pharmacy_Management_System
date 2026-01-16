@@ -18,18 +18,18 @@ $items = $items ?? [];
                     <p style="margin: 0 0 10px 0; color: #666;"><strong>Current Status:</strong></p>
                     <span style="padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 16px;
                         background-color: <?php 
-                            if ($order['status'] === 'pending') echo '#fff3cd';
-                            elseif ($order['status'] === 'confirmed') echo '#cfe2ff';
+                            if ($order['status'] === 'pending') echo '#f8d7da';
+                            elseif ($order['status'] === 'confirmed') echo '#fff3cd';
                             elseif ($order['status'] === 'shipped') echo '#d1e7dd';
-                            elseif ($order['status'] === 'completed') echo '#d1e7dd';
-                            else echo '#f8d7da';
+                            elseif ($order['status'] === 'completed') echo '#c3e6cb';
+                            else echo '#e2e3e5';
                         ?>;
                         color: <?php 
-                            if ($order['status'] === 'pending') echo '#856404';
-                            elseif ($order['status'] === 'confirmed') echo '#084298';
+                            if ($order['status'] === 'pending') echo '#842029';
+                            elseif ($order['status'] === 'confirmed') echo '#856404';
                             elseif ($order['status'] === 'shipped') echo '#0f5132';
-                            elseif ($order['status'] === 'completed') echo '#0f5132';
-                            else echo '#842029';
+                            elseif ($order['status'] === 'completed') echo '#155724';
+                            else echo '#383d41';
                         ?>;
                     ">
                         <?php echo ucfirst($order['status']); ?>
@@ -131,17 +131,21 @@ $items = $items ?? [];
                     </form>
 
                 <?php elseif ($order['status'] === 'shipped'): ?>
-                    <div style="background-color: #d1e7dd; padding: 15px; border-radius: 4px; text-align: center;">
-                        <p style="margin: 0; color: #0f5132;"><strong>✓ Order Shipped</strong></p>
-                        <p style="margin: 5px 0 0 0; font-size: 12px; color: #0f5132;">
-                            Awaiting customer confirmation of delivery
+                    <!-- Complete Order -->
+                    <form method="POST" action="<?php echo BASE_URL; ?>inventory_manager/completeOrder">
+                        <input type="hidden" name="order_id" value="<?php echo $order['id']; ?>">
+                        <p style="margin-bottom: 10px; color: #666; font-size: 14px;">
+                            Mark this order as completed. Customer delivery confirmed.
                         </p>
-                    </div>
+                        <button type="submit" class="btn btn-success btn-block">
+                            Mark as Completed
+                        </button>
+                    </form>
 
                 <?php elseif ($order['status'] === 'completed'): ?>
-                    <div style="background-color: #d1e7dd; padding: 15px; border-radius: 4px; text-align: center;">
-                        <p style="margin: 0; color: #0f5132;"><strong>✓ Order Completed</strong></p>
-                        <p style="margin: 5px 0 0 0; font-size: 12px; color: #0f5132;">
+                    <div style="background-color: #c3e6cb; padding: 15px; border-radius: 4px; text-align: center;">
+                        <p style="margin: 0; color: #155724;"><strong>✓ Order Completed</strong></p>
+                        <p style="margin: 5px 0 0 0; font-size: 12px; color: #155724;">
                             This order has been successfully delivered
                         </p>
                     </div>
