@@ -11,9 +11,15 @@
 
 			<div class="form-group">
 				<label for="password">Password</label>
-				<input type="password" id="password" name="password" placeholder="Enter your password" required>
+			<div style="position: relative;">
+				<input type="password" id="password" name="password" placeholder="Enter your password" required style="padding-right: 45px;">
+				<button type="button" id="togglePassword" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 18px; color: #666;">👁️</button>
 			</div>
-
+			</div>
+		<div class="form-group" style="display: flex; align-items: center;">
+			<input type="checkbox" id="remember_me" name="remember_me" style="margin-right: 8px; cursor: pointer;">
+			<label for="remember_me" style="margin: 0; cursor: pointer;">Remember me for 30 days</label>
+		</div>
 			<div class="form-group">
 				<button type="submit" class="btn btn-primary btn-block">Login</button>
 			</div>
@@ -25,4 +31,18 @@
 	</div>
 </div>
 
-<?php include_once __DIR__ . '/../layouts/footer.php'; ?>
+<script>
+// Toggle password visibility
+document.getElementById('togglePassword').addEventListener('click', function() {
+	const passwordField = document.getElementById('password');
+	const toggleBtn = document.getElementById('togglePassword');
+	
+	if (passwordField.type === 'password') {
+		passwordField.type = 'text';
+		toggleBtn.textContent = '🙈';
+	} else {
+		passwordField.type = 'password';
+		toggleBtn.textContent = '👁️';
+	}
+});
+</script>
