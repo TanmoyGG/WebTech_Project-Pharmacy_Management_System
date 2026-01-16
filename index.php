@@ -21,6 +21,9 @@ $base = '/WebTech_Project-Pharmacy_Management_System';
 $path = str_replace($base, '', $request);
 $path = ltrim($path, '/');
 
+// Remove query string from path
+$path = strtok($path, '?');
+
 // Check if requesting a static asset
 $publicPath = __DIR__ . '/public/' . $path;
 if (file_exists($publicPath) && is_file($publicPath)) {
