@@ -67,8 +67,9 @@ $status_filter = $status_filter ?? 'available';
                             // Check if expiring soon (within 30 days)
                             $expiryDate = new DateTime($product['expiry_date']);
                             $today = new DateTime();
+                            $isExpired = $expiryDate < $today;
                             $daysToExpiry = $today->diff($expiryDate)->days;
-                            $isExpiringSoon = $daysToExpiry <= 30;
+                            $isExpiringSoon = $daysToExpiry <= 30 && !$isExpired;
                             ?>
                             <tr style="border-bottom: 1px solid #eee;">
                                 <td style="padding: 12px;"><strong><?php echo htmlspecialchars($product['name']); ?></strong></td>
@@ -99,7 +100,11 @@ $status_filter = $status_filter ?? 'available';
                                 </td>
                                 <td style="padding: 12px; text-align: center; font-size: 12px;">
                                     <div><?php echo date('M d, Y', strtotime($product['expiry_date'])); ?></div>
-                                    <?php if ($isExpiringSoon): ?>
+                                    <?php if ($isExpired): ?>
+                                        <div style="color: #842029; font-weight: bold; margin-top: 2px;">
+                                            ❌ EXPIRED
+                                        </div>
+                                    <?php elseif ($isExpiringSoon): ?>
                                         <div style="color: #842029; font-weight: bold; margin-top: 2px;">
                                             ⚠️ <?php echo $daysToExpiry; ?> days left
                                         </div>
