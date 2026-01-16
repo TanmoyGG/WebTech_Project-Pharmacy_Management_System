@@ -10,9 +10,25 @@ require_once __DIR__ . '/../models/Order.php';
 function inventory_manager_dashboard() {
     requireRole('inventory_manager');
     
-    $productStats = productGetStats();
+    $stats = productGetStats();
     $lowStockProducts = productGetLowStock();
     $expiringProducts = productGetExpiring(30);
+    
+    // Get low stock count
+    $lowStockCount = count($lowStockProducts);
+    
+    // Get expiring soon count
+    $expiringSoonCount = count($expiringProducts);
+    
+    // Format stats for dashboard
+    $productStats = [
+        'total' => $stats['total_products'] ?? 0,
+        'available' => $stats['available_products'] ?? 0,
+        'discontinued' => $stats['discontinued_products'] ?? 0,
+        'low_stock' => $lowStockCount,
+        'expiring_soon' => $expiringSoonCount,
+        'total_stock' => $stats['total_stock'] ?? 0
+    ];
     
     $data = [
         'productStats' => $productStats,
@@ -23,7 +39,281 @@ function inventory_manager_dashboard() {
     render('inventory_manager/dashboard', $data);
 }
 
-// View all pending orders
+// List all products
+function inventory_manager_products() {
+    requireRole('inventory_manager');
+    
+    $search = getGet('search', '');
+    $category_filter = getGet('category', '');
+    $status_filter = getGet('status', 'available');
+    
+    $db = getConnection();
+    
+    // Build query based on filters
+    $whereConditions = [];
+    $params = [];
+    $types = '';
+    
+    if ($search) {
+        $whereConditions[] = "(p.name LIKE ? OR p.generic_name LIKE ?)";
+        $searchParam = '%' . $search . '%';
+        $params[] = $searchParam;
+        $params[] = $searchParam;
+        $types .= 'ss';
+    }
+    
+    if ($category_filter) {
+        $whereConditions[] = "p.category_id = ?";
+        $params[] = $category_filter;
+        $types .= 'i';
+    }
+    
+    if ($status_filter && $status_filter !== 'all') {
+        $whereConditions[] = "p.status = ?";
+        $params[] = $status_filter;
+        $types .= 's';
+    }
+    
+    $whereClause = !empty($whereConditions) ? 'WHERE ' . implode(' AND ', $whereConditions) : '';
+    
+    $query = "SELECT p.*, c.name as category_name 
+              FROM products p 
+              LEFT JOIN categories c ON p.category_id = c.id 
+              {$whereClause}
+              ORDER BY p.name ASC";
+    
+    if (!empty($params)) {
+        $stmt = $db->prepare($query);
+        $stmt->bind_param($types, ...$params);
+        $stmt->execute();
+        $products = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    } else {
+        $products = $db->query($query)->fetch_all(MYSQLI_ASSOC);
+    }
+    
+    // Get all categories for filter dropdown
+    $categories = categoryGetAll();
+    
+    render('inventory_manager/products', [
+        'products' => $products,
+        'categories' => $categories,
+        'search' => $search,
+        'category_filter' => $category_filter,
+        'status_filter' => $status_filter
+    ]);
+}
+
+// Show add product form
+function inventory_manager_addProduct() {
+    requireRole('inventory_manager');
+    
+    // Get all categories for dropdown
+    $categories = categoryGetAll();
+    
+    render('inventory_manager/add_product', [
+        'categories' => $categories
+    ]);
+}
+
+// Process add product form
+function inventory_manager_addProductProcess() {
+    requireRole('inventory_manager');
+    
+    if (!isPost()) {
+        redirectTo('inventory_manager/addProduct');
+    }
+    
+    // Get form data
+    $name = sanitize(getPost('name'));
+    $generic_name = sanitize(getPost('generic_name'));
+    $category_id = (int) getPost('category_id');
+    $description = sanitize(getPost('description'));
+    $price = (float) getPost('price');
+    $quantity = (int) getPost('quantity');
+    $low_stock_threshold = (int) getPost('low_stock_threshold', 10);
+    $manufacture_date = sanitize(getPost('manufacture_date'));
+    $expiry_date = sanitize(getPost('expiry_date'));
+    $status = getPost('status', 'available');
+    
+    // Auto-populate manufacture date with today if empty
+    if (isEmpty($manufacture_date)) {
+        $manufacture_date = date('Y-m-d');
+    }
+    
+    // Validate required fields
+    $errors = [];
+    
+    if (isEmpty($name) || strlen($name) < 3 || strlen($name) > 150) {
+        $errors[] = 'Product name must be 3-150 characters long';
+    }
+    
+    if (!$category_id || $category_id <= 0) {
+        $errors[] = 'Please select a valid category';
+    }
+    
+    if ($price <= 0) {
+        $errors[] = 'Price must be greater than 0';
+    }
+    
+    if ($quantity < 0) {
+        $errors[] = 'Quantity cannot be negative';
+    }
+    
+    if ($low_stock_threshold < 0) {
+        $errors[] = 'Low stock threshold cannot be negative';
+    }
+    
+    if (isEmpty($expiry_date)) {
+        $errors[] = 'Expiry date is required';
+    } else {
+        $today = date('Y-m-d');
+        if ($expiry_date <= $today) {
+            $errors[] = 'Expiry date must be in the future';
+        }
+    }
+    
+    if (!empty($errors)) {
+        $_SESSION['errors'] = $errors;
+        $_SESSION['form_data'] = $_POST;
+        redirectTo('inventory_manager/addProduct');
+    }
+    
+    // Create product
+    $result = productCreate(
+        $name,
+        $generic_name,
+        $category_id,
+        $description,
+        $price,
+        $quantity,
+        $low_stock_threshold,
+        $manufacture_date,
+        $expiry_date,
+        $status
+    );
+    
+    if ($result) {
+        setFlash('Product added successfully!', 'success');
+        redirectTo('inventory_manager/products');
+    } else {
+        setFlash('Failed to add product. Please try again.', 'error');
+        redirectTo('inventory_manager/addProduct');
+    }
+}
+
+// Edit product - Show edit form
+function inventory_manager_editProduct() {
+    requireRole('inventory_manager');
+    
+    $product_id = (int) getGet('id');
+    if (!$product_id) {
+        setFlash('Product not found', 'error');
+        redirectTo('inventory_manager/products');
+    }
+    
+    $product = productGetById($product_id);
+    if (!$product) {
+        setFlash('Product not found', 'error');
+        redirectTo('inventory_manager/products');
+    }
+    
+    $categories = categoryGetAll();
+    
+    include __DIR__ . '/../views/inventory_manager/edit_product.php';
+}
+
+// Edit product - Process form
+function inventory_manager_editProductProcess() {
+    requireRole('inventory_manager');
+    
+    $product_id = (int) getPost('product_id');
+    if (!$product_id) {
+        setFlash('Product not found', 'error');
+        redirectTo('inventory_manager/products');
+    }
+    
+    $product = productGetById($product_id);
+    if (!$product) {
+        setFlash('Product not found', 'error');
+        redirectTo('inventory_manager/products');
+    }
+    
+    // Get form data
+    $name = sanitize(getPost('name'));
+    $generic_name = sanitize(getPost('generic_name'));
+    $category_id = (int) getPost('category_id');
+    $description = sanitize(getPost('description'));
+    $price = (float) getPost('price');
+    $quantity = (int) getPost('quantity');
+    $low_stock_threshold = (int) getPost('low_stock_threshold', 10);
+    $manufacture_date = sanitize(getPost('manufacture_date'));
+    $expiry_date = sanitize(getPost('expiry_date'));
+    $status = getPost('status', 'available');
+    
+    // Validate required fields
+    $errors = [];
+    
+    if (isEmpty($name) || strlen($name) < 3 || strlen($name) > 150) {
+        $errors[] = 'Product name must be 3-150 characters long';
+    }
+    
+    if (!$category_id || $category_id <= 0) {
+        $errors[] = 'Please select a valid category';
+    }
+    
+    if ($price <= 0) {
+        $errors[] = 'Price must be greater than 0';
+    }
+    
+    if ($quantity < 0) {
+        $errors[] = 'Quantity cannot be negative';
+    }
+    
+    if ($low_stock_threshold < 0) {
+        $errors[] = 'Low stock threshold cannot be negative';
+    }
+    
+    if (isEmpty($expiry_date)) {
+        $errors[] = 'Expiry date is required';
+    } else {
+        $today = date('Y-m-d');
+        if ($expiry_date <= $today) {
+            $errors[] = 'Expiry date must be in the future';
+        }
+    }
+    
+    if (!empty($errors)) {
+        $_SESSION['errors'] = $errors;
+        $_SESSION['form_data'] = $_POST;
+        redirectTo('inventory_manager/editProduct?id=' . $product_id);
+    }
+    
+    // Update product
+    $result = productUpdate(
+        $product_id,
+        $name,
+        $generic_name,
+        $description,
+        $price,
+        $low_stock_threshold,
+        $manufacture_date,
+        $expiry_date,
+        $category_id,
+        $quantity,
+        $status
+    );
+    
+    if ($result) {
+        setFlash('Product updated successfully!', 'success');
+        redirectTo('inventory_manager/products');
+    } else {
+        setFlash('Failed to update product. Please try again.', 'error');
+        redirectTo('inventory_manager/editProduct?id=' . $product_id);
+    }
+}
+
+// View orders (already implemented below)
+
 function inventory_manager_orders() {
     requireRole('inventory_manager');
     

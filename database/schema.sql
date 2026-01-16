@@ -39,8 +39,8 @@ CREATE TABLE products (
 	generic_name VARCHAR(150),
 	description TEXT,
 	price DECIMAL(10, 2) NOT NULL,
-	quantity INT NOT NULL DEFAULT 0, -- Student 2: Stock Adjustment
-	low_stock_threshold INT DEFAULT 10, -- Student 2: Low Stock Alerts
+	quantity INT NOT NULL DEFAULT 0, 
+	low_stock_threshold INT DEFAULT 10, 
 	manufacture_date DATE,
 	expiry_date DATE, -- Student 2: Expiry Tracking
 	status ENUM('available', 'discontinued') DEFAULT 'available',

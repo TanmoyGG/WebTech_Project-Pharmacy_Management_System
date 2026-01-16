@@ -15,6 +15,13 @@ DELETE FROM products;
 DELETE FROM categories;
 DELETE FROM system_config;
 
+-- Reset AUTO_INCREMENT counters to ensure consistent IDs
+ALTER TABLE categories AUTO_INCREMENT = 1;
+ALTER TABLE products AUTO_INCREMENT = 1;
+ALTER TABLE users AUTO_INCREMENT = 1;
+ALTER TABLE orders AUTO_INCREMENT = 1;
+ALTER TABLE carts AUTO_INCREMENT = 1;
+
 -- Step 2: Insert Users (admin, inventory_manager, customers)
 INSERT INTO users (name, email, phone, password, role, status) VALUES
 ('Admin User', 'admin@pharmacy.com', '01700000001', 'password123', 'admin', 'active'),

@@ -35,10 +35,24 @@ function initApp() {
     return $urlArray;
 }
 
+// Convert underscore-separated names to CamelCase
+// Example: inventory_manager -> InventoryManager
+function toCamelCase($str) {
+    $parts = explode('_', $str);
+    $camelCase = '';
+    foreach ($parts as $part) {
+        $camelCase .= ucfirst(strtolower($part));
+    }
+    return $camelCase;
+}
+
 // Route the request to appropriate controller and method
 function routeRequest($urlArray) {
     // Default controller is 'home'
-    $controller = !empty($urlArray[0]) ? ucfirst($urlArray[0]) : 'Home';
+    $controllerName = !empty($urlArray[0]) ? $urlArray[0] : 'home';
+    
+    // Convert underscore-separated names to CamelCase (inventory_manager -> InventoryManager)
+    $controller = toCamelCase($controllerName);
     $method = !empty($urlArray[1]) ? $urlArray[1] : 'index';
     $params = array_slice($urlArray, 2);
 
@@ -49,8 +63,9 @@ function routeRequest($urlArray) {
     if (file_exists($controllerFile)) {
         require_once $controllerFile;
         
-        // Create function name from controller and method
-        $functionName = strtolower($controller) . '_' . $method;
+        // Create function name from controller and method (always lowercase with underscore)
+        // Example: InventoryManager + orders -> inventory_manager_orders
+        $functionName = strtolower($controllerName) . '_' . $method;
         
         // Check if function exists and call it
         if (function_exists($functionName)) {
@@ -58,8 +73,8 @@ function routeRequest($urlArray) {
         } else {
             // Debug: log available functions for this controller
             $availableFunctions = get_defined_functions();
-            $controllerFunctions = array_filter($availableFunctions['user'], function($f) use ($controller) {
-                return strpos($f, strtolower($controller) . '_') === 0;
+            $controllerFunctions = array_filter($availableFunctions['user'], function($f) use ($controllerName) {
+                return strpos($f, strtolower($controllerName) . '_') === 0;
             });
             
             showError(404, "Method not found: " . $functionName . ". Available: " . implode(', ', $controllerFunctions));
