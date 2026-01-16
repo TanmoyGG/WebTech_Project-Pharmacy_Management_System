@@ -52,19 +52,18 @@ function productGetByCategory($category_id, $status = 'available') {
 }
 
 // Create new product
-function productCreate($name, $category_id, $generic_name, $description, $price, $quantity, $low_stock_threshold = 10, $manufacture_date = null, $expiry_date = null) {
+function productCreate($name, $generic_name, $category_id, $description, $price, $quantity, $low_stock_threshold = 10, $manufacture_date = null, $expiry_date = null, $status = 'available') {
     $db = getConnection();
-    $status = 'available';
     
-    $stmt = $db->prepare("INSERT INTO products (name, category_id, generic_name, description, price, quantity, low_stock_threshold, manufacture_date, expiry_date, status) 
+    $stmt = $db->prepare("INSERT INTO products (name, generic_name, category_id, description, price, quantity, low_stock_threshold, manufacture_date, expiry_date, status) 
                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-    $stmt->bind_param('sissdiiiss', $name, $category_id, $generic_name, $description, $price, $quantity, $low_stock_threshold, $manufacture_date, $expiry_date, $status);
+    $stmt->bind_param('ssiidiiiss', $name, $generic_name, $category_id, $description, $price, $quantity, $low_stock_threshold, $manufacture_date, $expiry_date, $status);
     
     return $stmt->execute();
 }
 
 // Update product
-function productUpdate($product_id, $name = null, $generic_name = null, $description = null, $price = null, $low_stock_threshold = null, $manufacture_date = null, $expiry_date = null) {
+function productUpdate($product_id, $name = null, $generic_name = null, $description = null, $price = null, $low_stock_threshold = null, $manufacture_date = null, $expiry_date = null, $category_id = null, $quantity = null, $status = null) {
     $db = getConnection();
     $updates = [];
     $params = [];
@@ -103,6 +102,21 @@ function productUpdate($product_id, $name = null, $generic_name = null, $descrip
     if ($expiry_date !== null) {
         $updates[] = "expiry_date = ?";
         $params[] = $expiry_date;
+        $types .= 's';
+    }
+    if ($category_id !== null) {
+        $updates[] = "category_id = ?";
+        $params[] = $category_id;
+        $types .= 'i';
+    }
+    if ($quantity !== null) {
+        $updates[] = "quantity = ?";
+        $params[] = $quantity;
+        $types .= 'i';
+    }
+    if ($status !== null) {
+        $updates[] = "status = ?";
+        $params[] = $status;
         $types .= 's';
     }
     
