@@ -34,8 +34,9 @@
                         <a href="<?php echo BASE_URL; ?>inventory_manager/dashboard">Dashboard</a>
                         <a href="<?php echo BASE_URL; ?>inventory_manager/orders">Orders</a>
                         <a href="<?php echo BASE_URL; ?>inventory_manager/products">Products</a>
-                        <a href="<?php echo BASE_URL; ?>inventory_manager/low_stock">Low Stock</a>
-                        <a href="<?php echo BASE_URL; ?>inventory_manager/expiring">Expiring Items</a>
+                        <a href="<?php echo BASE_URL; ?>inventory_manager/lowStock">Low Stock</a>
+                        <a href="<?php echo BASE_URL; ?>inventory_manager/expiringItems">Expiring Items</a>
+                        <a href="<?php echo BASE_URL; ?>inventory_manager/expiredItems">Expired Items</a>
                     
                     <!-- Customer Menu -->
                     <?php else: ?>
