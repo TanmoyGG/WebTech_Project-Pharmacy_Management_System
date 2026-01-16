@@ -5,7 +5,7 @@ $products = $products ?? [];
 $categories = $categories ?? [];
 $search = $search ?? '';
 $category_filter = $category_filter ?? '';
-$status_filter = $status_filter ?? 'available';
+$status_filter = $status_filter ?? 'all';
 ?>
 
 <div class="container" style="margin-top: 20px;">
