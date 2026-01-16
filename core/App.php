@@ -8,8 +8,28 @@ function initApp() {
         session_start();
     }
 
+    // Check for "Remember Me" cookie and auto-login if user is not logged in
+    if (!userIsLoggedIn() && isset($_COOKIE['pharmacy_remember_me'])) {
+        require_once __DIR__ . '/../helpers/cookie_helper.php';
+        require_once __DIR__ . '/../app/models/User.php';
+        
+        $rememberMe = getCookieRememberMe();
+        if ($rememberMe && isset($rememberMe['email'])) {
+            $user = userGetByEmail($rememberMe['email']);
+            if ($user) {
+                setUserSession($user['id'], $user['name'], $user['email'], $user['role']);
+            }
+        }
+    }
+
     // Get the requested URL
-    $url = isset($_GET['url']) ? rtrim($_GET['url'], '/') : 'home';
+    $url = isset($_GET['url']) ? rtrim($_GET['url'], '/') : '';
+    
+    // If no URL specified (base URL), default to home
+    if (empty($url)) {
+        $url = 'home';
+    }
+    
     $urlArray = explode('/', $url);
 
     return $urlArray;
