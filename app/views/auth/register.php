@@ -1,45 +1,109 @@
 <?php $pageTitle = 'Register'; include_once __DIR__ . '/../layouts/header.php'; ?>
 
-<div class="card" style="max-width: 520px; margin: 40px auto;">
-	<div class="card-header">Create an Account</div>
+<div class="card" style="max-width: 600px; margin: 40px auto;">
+	<div class="card-header">Create Your Customer Account</div>
 	<div class="card-body">
-		<form id="registerForm" action="<?php echo BASE_URL; ?>/auth/register" method="POST" onsubmit="return validateForm('registerForm');">
+		<!-- Display errors if any -->
+		<?php if (isset($_SESSION['errors']) && !empty($_SESSION['errors'])): ?>
+			<div class="alert alert-danger" style="margin-bottom: 20px;">
+				<strong>Registration failed:</strong>
+				<ul style="margin: 10px 0 0 20px; padding: 0;">
+					<?php foreach ($_SESSION['errors'] as $field => $error): ?>
+						<li><?php echo htmlspecialchars($error); ?></li>
+					<?php endforeach; ?>
+				</ul>
+			</div>
+			<?php unset($_SESSION['errors']); ?>
+		<?php endif; ?>
+
+		<form id="registerForm" action="<?php echo BASE_URL; ?>auth/registerProcess" method="POST" onsubmit="return validateRegistrationForm();">
 			<div class="grid-2">
 				<div class="form-group">
-					<label for="name">Full Name</label>
-					<input type="text" id="name" name="name" placeholder="Your name" required>
+					<label for="name">Full Name <span style="color: red;">*</span></label>
+					<input type="text" id="name" name="name" placeholder="Your full name" required value="<?php echo isset($_SESSION['form_data']['name']) ? htmlspecialchars($_SESSION['form_data']['name']) : ''; ?>">
 				</div>
 
 				<div class="form-group">
-					<label for="email">Email</label>
-					<input type="email" id="email" name="email" placeholder="you@example.com" required>
+					<label for="email">Email Address <span style="color: red;">*</span></label>
+					<input type="email" id="email" name="email" placeholder="you@example.com" required value="<?php echo isset($_SESSION['form_data']['email']) ? htmlspecialchars($_SESSION['form_data']['email']) : ''; ?>">
 				</div>
 			</div>
 
 			<div class="grid-2">
 				<div class="form-group">
-					<label for="password">Password</label>
+					<label for="phone">Phone Number</label>
+					<input type="tel" id="phone" name="phone" placeholder="+880 1234567890" value="<?php echo isset($_SESSION['form_data']['phone']) ? htmlspecialchars($_SESSION['form_data']['phone']) : ''; ?>">
+				</div>
+
+				<div class="form-group">
+					<label for="dob">Date of Birth</label>
+					<input type="date" id="dob" name="dob" value="<?php echo isset($_SESSION['form_data']['dob']) ? htmlspecialchars($_SESSION['form_data']['dob']) : ''; ?>">
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label for="address">Delivery Address</label>
+				<textarea id="address" name="address" placeholder="Enter your delivery address" rows="3"><?php echo isset($_SESSION['form_data']['address']) ? htmlspecialchars($_SESSION['form_data']['address']) : ''; ?></textarea>
+			</div>
+
+			<div class="grid-2">
+				<div class="form-group">
+					<label for="password">Password <span style="color: red;">*</span></label>
 					<input type="password" id="password" name="password" placeholder="Minimum 6 characters" required>
 				</div>
 
 				<div class="form-group">
-					<label for="confirm_password">Confirm Password</label>
+					<label for="confirm_password">Confirm Password <span style="color: red;">*</span></label>
 					<input type="password" id="confirm_password" name="confirm_password" placeholder="Re-enter password" required>
 				</div>
 			</div>
 
-			<!-- Default role is customer -->
+			<!-- Hidden field: Role is always 'customer' for self-registration -->
 			<input type="hidden" name="role" value="customer">
 
 			<div class="form-group">
-				<button type="submit" class="btn btn-success btn-block">Register</button>
+				<button type="submit" class="btn btn-success btn-block">Create Account</button>
 			</div>
 		</form>
 
-		<p class="text-muted" style="margin-top: 10px;">
-			Already have an account? <a href="<?php echo BASE_URL; ?>/auth/login">Login</a>
+		<p class="text-muted" style="margin-top: 15px; text-align: center;">
+			Already have an account? <a href="<?php echo BASE_URL; ?>auth/login">Login here</a>
 		</p>
 	</div>
 </div>
+
+<script>
+function validateRegistrationForm() {
+	const name = document.getElementById('name').value.trim();
+	const email = document.getElementById('email').value.trim();
+	const password = document.getElementById('password').value;
+	const confirmPassword = document.getElementById('confirm_password').value;
+
+	if (name.length < 3) {
+		alert('Name must be at least 3 characters long');
+		return false;
+	}
+
+	if (!email.includes('@')) {
+		alert('Please enter a valid email address');
+		return false;
+	}
+
+	if (password.length < 6) {
+		alert('Password must be at least 6 characters long');
+		return false;
+	}
+
+	if (password !== confirmPassword) {
+		alert('Passwords do not match');
+		return false;
+	}
+
+	return true;
+}
+
+// Clear form data from session after displaying
+<?php unset($_SESSION['form_data']); ?>
+</script>
 
 <?php include_once __DIR__ . '/../layouts/footer.php'; ?>
