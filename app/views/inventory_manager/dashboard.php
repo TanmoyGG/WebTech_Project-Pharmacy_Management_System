@@ -49,14 +49,14 @@ $expiringProducts = $expiringProducts ?? [];
                 <a href="<?php echo BASE_URL; ?>inventory_manager/orders" class="btn btn-primary" style="text-decoration: none;">
                     📦 Manage Orders
                 </a>
-                <a href="<?php echo BASE_URL; ?>inventory_manager/products" class="btn btn-info" style="text-decoration: none;">
+                <a href="<?php echo BASE_URL; ?>inventory_manager/products" class="btn btn-primary" style="text-decoration: none;">
                     💊 View Products
                 </a>
-                <a href="<?php echo BASE_URL; ?>inventory_manager/low_stock" class="btn btn-warning" style="text-decoration: none;">
-                    ⚠️ Low Stock Alerts
+                <a href="<?php echo BASE_URL; ?>inventory_manager/addProduct" class="btn btn-primary" style="text-decoration: none;">
+                    ➕ Add New Product
                 </a>
-                <a href="<?php echo BASE_URL; ?>inventory_manager/expiring" class="btn btn-danger" style="text-decoration: none;">
-                    ⏰ Expiring Items
+                <a href="<?php echo BASE_URL; ?>inventory_manager/expiredItems" class="btn btn-primary" style="text-decoration: none;">
+                    ❌ Expired Items
                 </a>
             </div>
         </div>
@@ -87,8 +87,8 @@ $expiringProducts = $expiringProducts ?? [];
                                 </td>
                                 <td style="padding: 10px; text-align: center;"><?php echo $product['low_stock_threshold']; ?></td>
                                 <td style="padding: 10px; text-align: right;">
-                                    <a href="<?php echo BASE_URL; ?>inventory_manager/products?id=<?php echo $product['id']; ?>" class="btn btn-sm btn-info">
-                                        Update Stock
+                                    <a href="<?php echo BASE_URL; ?>inventory_manager/editProduct?id=<?php echo $product['id']; ?>" class="btn btn-sm btn-info">
+                                        Edit Stock
                                     </a>
                                 </td>
                             </tr>
