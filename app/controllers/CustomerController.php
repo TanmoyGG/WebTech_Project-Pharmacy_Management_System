@@ -7,9 +7,12 @@ require_once __DIR__ . '/../models/Cart.php';
 require_once __DIR__ . '/../models/Order.php';
 require_once __DIR__ . '/../models/OrderItem.php';
 require_once __DIR__ . '/../models/User.php';
+require_once __DIR__ . '/../../helpers/cookie_helper.php';
 
 // Display customer home page
 function customer_home() {
+    requireAuth(); // Ensure user is logged in
+    
     $page = getGet('page', 1);
     $products = productGetPaginated($page, RECORDS_PER_PAGE);
     
@@ -18,6 +21,8 @@ function customer_home() {
 
 // Browse medicines
 function customer_browseMedicines() {
+    requireAuth(); // Ensure user is logged in
+    
     $page = getGet('page', 1);
     $category_id = getGet('category', null);
     
@@ -195,16 +200,21 @@ function customer_orderDetails() {
 
 // Product search
 function customer_productSearch() {
+    requireAuth(); // Ensure user is logged in
+    
     $search_query = getGet('q', '');
     $products = [];
     
     if ($search_query) {
+        // Track search in cookies
+        addSearchHistory($search_query);
         $products = productSearch($search_query);
     }
     
     render('customer/product_search', [
         'products' => $products,
-        'search_query' => $search_query
+        'search_query' => $search_query,
+        'recentSearches' => getSearchHistory()
     ]);
 }
 ?>
