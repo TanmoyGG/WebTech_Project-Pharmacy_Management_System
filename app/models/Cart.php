@@ -84,12 +84,12 @@ function cartUpdateItemQuantity($cart_item_id, $quantity) {
     if (!$item) {
         return false;
     }
-    $subtotal = $quantity * $item['price'];
-    $stmt = $db->prepare('UPDATE cart_items SET quantity = ?, subtotal = ?, updated_at = NOW() WHERE id = ?');
+    // Only update quantity (subtotal is calculated on the fly in cartGetItems())
+    $stmt = $db->prepare('UPDATE cart_items SET quantity = ? WHERE id = ?');
     if (!$stmt) {
         return false;
     }
-    $stmt->bind_param('idi', $quantity, $subtotal, $cart_item_id);
+    $stmt->bind_param('ii', $quantity, $cart_item_id);
     return $stmt->execute();
 }
 
