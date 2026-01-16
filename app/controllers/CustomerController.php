@@ -13,8 +13,14 @@ require_once __DIR__ . '/../../helpers/cookie_helper.php';
 function customer_home() {
     requireAuth(); // Ensure user is logged in
     
-    $page = getGet('page', 1);
-    $products = productGetPaginated($page, RECORDS_PER_PAGE);
+    $db = getConnection();
+    $today = date('Y-m-d');
+    
+    // Get featured products (available and not expired, limited to 8)
+    $stmt = $db->prepare('SELECT * FROM products WHERE status = "available" AND expiry_date >= ? ORDER BY created_at DESC LIMIT 8');
+    $stmt->bind_param('s', $today);
+    $stmt->execute();
+    $products = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     
     render('customer/home', ['products' => $products]);
 }
@@ -26,20 +32,27 @@ function customer_browseMedicines() {
     $category_id = getGet('category', null);
     $search_query = getGet('q', '');
     
+    $today = date('Y-m-d');
+    
     // Get all products (not paginated for browse view) with optional filtering
     if ($search_query) {
         // Search products by name, generic_name, or description
         $products = productSearch($search_query);
+        // Filter out expired products
+        $products = array_filter($products, function($product) use ($today) {
+            return $product['expiry_date'] >= $today;
+        });
         // Also track the search in cookies
         addSearchHistory($search_query);
     } else {
-        // Get all products, optionally filtered by category
+        // Get all products, optionally filtered by category, excluding expired ones
         $db = getConnection();
         if ($category_id) {
-            $stmt = $db->prepare('SELECT * FROM products WHERE category_id = ? AND status = "available" ORDER BY name ASC');
-            $stmt->bind_param('i', $category_id);
+            $stmt = $db->prepare('SELECT * FROM products WHERE category_id = ? AND status = "available" AND expiry_date >= ? ORDER BY name ASC');
+            $stmt->bind_param('is', $category_id, $today);
         } else {
-            $stmt = $db->prepare('SELECT * FROM products WHERE status = "available" ORDER BY name ASC');
+            $stmt = $db->prepare('SELECT * FROM products WHERE status = "available" AND expiry_date >= ? ORDER BY name ASC');
+            $stmt->bind_param('s', $today);
         }
         $stmt->execute();
         $products = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -322,11 +335,12 @@ function customer_searchMedicines() {
         if (strlen($search_query) >= 2) {
             // Search products by name, generic_name, or description (partial match)
             $search_param = '%' . $search_query . '%';
+            $today = date('Y-m-d');
             
             $stmt = $db->prepare('
                 SELECT id, name, generic_name, description, price, quantity 
                 FROM products 
-                WHERE status = "available" AND (
+                WHERE status = "available" AND expiry_date >= ? AND (
                     name LIKE ? OR 
                     generic_name LIKE ? OR 
                     description LIKE ?
@@ -344,12 +358,13 @@ function customer_searchMedicines() {
                 exit;
             }
             
-            $stmt->bind_param('sss', $search_param, $search_param, $search_param);
+            $stmt->bind_param('ssss', $today, $search_param, $search_param, $search_param);
             $stmt->execute();
             $products = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
         } else {
-            // If search is empty, return all products
-            $stmt = $db->prepare('SELECT id, name, generic_name, description, price, quantity FROM products WHERE status = "available" ORDER BY name ASC LIMIT 20');
+            // If search is empty, return all products (not expired)
+            $today = date('Y-m-d');
+            $stmt = $db->prepare('SELECT id, name, generic_name, description, price, quantity FROM products WHERE status = "available" AND expiry_date >= ? ORDER BY name ASC LIMIT 20');
             
             if (!$stmt) {
                 http_response_code(500);
@@ -360,6 +375,7 @@ function customer_searchMedicines() {
                 exit;
             }
             
+            $stmt->bind_param('s', $today);
             $stmt->execute();
             $result = $stmt->get_result();
             $products = $result->fetch_all(MYSQLI_ASSOC);
