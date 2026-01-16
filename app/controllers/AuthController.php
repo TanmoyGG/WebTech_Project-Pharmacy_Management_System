@@ -106,7 +106,10 @@ function auth_registerProcess() {
     $email = sanitizeEmail(getPost('email', ''));
     $password = getPost('password', '');
     $confirmPassword = getPost('confirm_password', '');
-    $role = getPost('role', 'customer');
+    $phone = sanitize(getPost('phone', ''));
+    $dob = sanitize(getPost('dob', ''));
+    $address = sanitize(getPost('address', ''));
+    $role = 'customer'; // Always customer for self-registration
     
     // Validate inputs
     $errors = [];
@@ -141,11 +144,11 @@ function auth_registerProcess() {
         redirectTo('auth/register');
     }
     
-    // Create user account
-    $result = userCreate($name, $email, $password, $role);
+    // Create user account with additional fields
+    $result = userCreate($name, $email, $password, $role, $phone, $dob, $address);
     
     if ($result) {
-        setFlash('Registration successful! Please login.', 'success');
+        setFlash('Registration successful! Please login with your credentials.', 'success');
         redirectTo('auth/login');
     } else {
         setFlash('Registration failed. Please try again.', 'error');
