@@ -217,4 +217,47 @@ function transactionGetStats() {
     FROM transactions");
     return $result ? $result->fetch_assoc() : [];
 }
+
+function transactionGetRecent($limit = 10) {
+    $db = getConnection();
+    $stmt = $db->prepare("SELECT * FROM transactions ORDER BY transaction_date DESC LIMIT ?");
+    if (!$stmt) {
+        return [];
+    }
+    $stmt->bind_param('i', $limit);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
+
+function transactionGetByStatus($status, $start_date = null, $end_date = null) {
+    $db = getConnection();
+    
+    $query = "SELECT * FROM transactions WHERE status = ?";
+    $params = [$status];
+    $types = 's';
+    
+    if ($start_date && $end_date) {
+        $query .= " AND transaction_date BETWEEN ? AND ?";
+        $params[] = $start_date;
+        $params[] = $end_date;
+        $types .= 'ss';
+    }
+    
+    $query .= " ORDER BY transaction_date DESC";
+    
+    $stmt = $db->prepare($query);
+    if (!$stmt) {
+        return [];
+    }
+    
+    $refs = [];
+    $refs[] = $types;
+    foreach ($params as $k => $v) {
+        $refs[] = &$params[$k];
+    }
+    call_user_func_array([$stmt, 'bind_param'], $refs);
+    
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
 ?>
