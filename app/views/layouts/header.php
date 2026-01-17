@@ -24,9 +24,10 @@
                     <!-- Admin Menu -->
                     <?php if ($role === 'admin'): ?>
                         <a href="<?php echo BASE_URL; ?>admin/dashboard">Dashboard</a>
-                        <a href="<?php echo BASE_URL; ?>admin/products">Products</a>
-                        <a href="<?php echo BASE_URL; ?>admin/orders">Orders</a>
                         <a href="<?php echo BASE_URL; ?>admin/users">Users</a>
+                        <a href="<?php echo BASE_URL; ?>admin/inventory">Inventory</a>
+                        <a href="<?php echo BASE_URL; ?>admin/transactionHistory">Transactions</a>
+                        <a href="<?php echo BASE_URL; ?>admin/systemConfig">Settings</a>
                         <a href="<?php echo BASE_URL; ?>admin/reports">Reports</a>
                     
                     <!-- Inventory Manager Menu -->
