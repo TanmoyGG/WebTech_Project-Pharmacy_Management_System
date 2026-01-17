@@ -130,4 +130,32 @@ function orderItemGetQuantity($order_id, $product_id) {
     $data = $stmt->get_result()->fetch_assoc();
     return $data ? (int)$data['quantity'] : 0;
 }
+
+// Get top selling products
+function orderItemGetTopProducts($limit = 10) {
+    $db = getConnection();
+    $stmt = $db->prepare("
+        SELECT 
+            p.id, 
+            p.name, 
+            p.generic_name,
+            SUM(oi.quantity) as total_sold,
+            SUM(oi.quantity * oi.price) as total_revenue
+        FROM order_items oi
+        JOIN products p ON oi.product_id = p.id
+        JOIN orders o ON oi.order_id = o.id
+        WHERE o.status = 'completed'
+        GROUP BY p.id, p.name, p.generic_name
+        ORDER BY total_sold DESC
+        LIMIT ?
+    ");
+    
+    if (!$stmt) {
+        return [];
+    }
+    
+    $stmt->bind_param('i', $limit);
+    $stmt->execute();
+    return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+}
 ?>
