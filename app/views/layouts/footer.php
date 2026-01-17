@@ -3,7 +3,7 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <p>&copy; <?php echo date('Y'); ?> Pharmacy Management System. All rights reserved.</p>
+            <p>&copy; <?php echo date('Y'); ?> Pharmacy Management System. All rights reserved by "Homo Sapiens".</p>
             <p>
                 <a href="<?php echo BASE_URL; ?>/home/about">About</a> | 
                 <a href="<?php echo BASE_URL; ?>/home/contact">Contact</a>
