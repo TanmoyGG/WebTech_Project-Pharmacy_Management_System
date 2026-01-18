@@ -102,8 +102,8 @@ function profile_updatePassword() {
         redirectTo('profile/changePassword');
     }
     
-    if (strlen($newPassword) < 8) {
-        setFlash('Password must be at least 8 characters long', 'error');
+    if (strlen($newPassword) < 6) {
+        setFlash('Password must be at least 6 characters long', 'error');
         redirectTo('profile/changePassword');
     }
     
