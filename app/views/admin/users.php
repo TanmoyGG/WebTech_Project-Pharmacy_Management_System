@@ -1,5 +1,9 @@
-<!-- User Management -->
-<div class="container" style="padding: 20px;">
+<?php 
+$pageTitle = 'User Management';
+include_once __DIR__ . '/../layouts/header.php';
+?>
+
+<div class="container" style="margin-top: 20px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
         <h1 style="color: #2c3e50; margin: 0;">
             <i class="fas fa-users"></i> User Management
@@ -10,7 +14,9 @@
     </div>
 
     <!-- Filters -->
-    <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px;">
+    <div class="card" style="margin-bottom: 20px;">
+        <div class="card-header">Filters</div>
+        <div class="card-body">
         <form method="GET" action="<?php echo BASE_URL; ?>admin/users" style="display: flex; gap: 15px; flex-wrap: wrap;">
             
             <!-- Search -->
@@ -30,6 +36,7 @@
             
             <!-- Status Filter -->
             <select name="status" style="padding: 10px; border: 1px solid #ced4da; border-radius: 5px;">
+                <option value="" <?php echo empty($status_filter) ? 'selected' : ''; ?>>All Status</option>
                 <option value="active" <?php echo $status_filter === 'active' ? 'selected' : ''; ?>>Active</option>
                 <option value="inactive" <?php echo $status_filter === 'inactive' ? 'selected' : ''; ?>>Inactive</option>
             </select>
@@ -42,10 +49,13 @@
                 <i class="fas fa-redo"></i> Reset
             </a>
         </form>
+        </div>
     </div>
 
     <!-- Users Table -->
-    <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+    <div class="card">
+        <div class="card-header">Users</div>
+        <div class="card-body">
         <?php if (!empty($users)): ?>
             <div style="overflow-x: auto;">
                 <table style="width: 100%; border-collapse: collapse;">
@@ -134,6 +144,7 @@
                 <p style="font-size: 14px; margin-top: 10px;">Try adjusting your filters or search terms</p>
             </div>
         <?php endif; ?>
+        </div>
     </div>
 
     <!-- User Statistics -->
@@ -145,4 +156,4 @@
         </div>
     </div>
 
-</div>
+<?php include_once __DIR__ . '/../layouts/footer.php'; ?>
