@@ -549,8 +549,14 @@ function admin_generateSalesReport() {
     
     // Get data for report
     $orders = orderGetByDateRange($start_date, $end_date, 'completed');
-    $revenue = orderGetRevenue($start_date, $end_date);
+    $revenue_data = orderGetRevenue($start_date, $end_date);
+    $revenue = $revenue_data['total_revenue'] ?? 0;
     $topProducts = orderItemGetTopProducts(10);
+    
+    // Get pharmacy info
+    $pharmacy_name = systemConfigGetValue('pharmacy_name', 'Pharmacy Management System');
+    $pharmacy_address = systemConfigGetValue('address', 'N/A');
+    $pharmacy_phone = systemConfigGetValue('contact_phone', 'N/A');
     
     $data = [
         'report_type' => $report_type,
@@ -558,9 +564,150 @@ function admin_generateSalesReport() {
         'end_date' => $end_date,
         'orders' => $orders,
         'revenue' => $revenue,
-        'topProducts' => $topProducts
+        'topProducts' => $topProducts,
+        'pharmacy_name' => $pharmacy_name,
+        'pharmacy_address' => $pharmacy_address,
+        'pharmacy_phone' => $pharmacy_phone
     ];
     
     render('admin/sales_report', $data);
+}
+
+function admin_generateStockReport() {
+    requireRole('admin');
+    
+    // Get all products with category information using LEFT JOIN
+    $db = getConnection();
+    $query = "SELECT p.*, c.name as category_name 
+              FROM products p 
+              LEFT JOIN categories c ON p.category_id = c.id 
+              ORDER BY p.name ASC";
+    $result = $db->query($query);
+    $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    
+    // Get low stock products with category
+    $query_low = "SELECT p.*, c.name as category_name 
+                  FROM products p 
+                  LEFT JOIN categories c ON p.category_id = c.id 
+                  WHERE p.quantity <= p.low_stock_threshold 
+                  ORDER BY p.quantity ASC";
+    $result_low = $db->query($query_low);
+    $low_stock = $result_low ? $result_low->fetch_all(MYSQLI_ASSOC) : [];
+    
+    // Get expired products with category
+    $query_expired = "SELECT p.*, c.name as category_name 
+                      FROM products p 
+                      LEFT JOIN categories c ON p.category_id = c.id 
+                      WHERE p.expiry_date < CURDATE() 
+                      ORDER BY p.expiry_date ASC";
+    $result_expired = $db->query($query_expired);
+    $expired = $result_expired ? $result_expired->fetch_all(MYSQLI_ASSOC) : [];
+    
+    // Get expiring soon products with category
+    $query_expiring = "SELECT p.*, c.name as category_name 
+                       FROM products p 
+                       LEFT JOIN categories c ON p.category_id = c.id 
+                       WHERE p.expiry_date BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 30 DAY) 
+                       ORDER BY p.expiry_date ASC";
+    $result_expiring = $db->query($query_expiring);
+    $expiring_soon = $result_expiring ? $result_expiring->fetch_all(MYSQLI_ASSOC) : [];
+    
+    // Calculate inventory statistics
+    $total_products = count($products);
+    $total_value = 0;
+    $available_count = 0;
+    $out_of_stock_count = 0;
+    
+    foreach ($products as $product) {
+        $total_value += $product['price'] * $product['quantity'];
+        if ($product['status'] === 'available' && $product['quantity'] > 0) {
+            $available_count++;
+        }
+        if ($product['quantity'] == 0 || $product['status'] === 'out_of_stock') {
+            $out_of_stock_count++;
+        }
+    }
+    
+    // Get pharmacy info
+    $pharmacy_name = systemConfigGetValue('pharmacy_name', 'Pharmacy Management System');
+    $pharmacy_address = systemConfigGetValue('address', 'N/A');
+    $pharmacy_phone = systemConfigGetValue('contact_phone', 'N/A');
+    
+    $data = [
+        'products' => $products,
+        'low_stock' => $low_stock,
+        'expired' => $expired,
+        'expiring_soon' => $expiring_soon,
+        'total_products' => $total_products,
+        'total_value' => $total_value,
+        'available_count' => $available_count,
+        'out_of_stock_count' => $out_of_stock_count,
+        'generated_at' => date('F j, Y g:i A'),
+        'pharmacy_name' => $pharmacy_name,
+        'pharmacy_address' => $pharmacy_address,
+        'pharmacy_phone' => $pharmacy_phone
+    ];
+    
+    render('admin/stock_report', $data);
+}
+
+function admin_generateUserReport() {
+    requireRole('admin');
+    
+    // Get pharmacy info
+    $pharmacy_name = systemConfigGetValue('pharmacy_name', 'Pharmacy Management System');
+    $pharmacy_address = systemConfigGetValue('address', 'N/A');
+    $pharmacy_phone = systemConfigGetValue('contact_phone', 'N/A');
+    
+    $users = userGetAll();
+    $total_users = count($users);
+    $active_users = 0;
+    $inactive_users = 0;
+    $admin_count = 0;
+    $inventory_manager_count = 0;
+    $customer_count = 0;
+    $recent_registrations = [];
+    
+    foreach ($users as $user) {
+        if ($user['status'] === 'active') {
+            $active_users++;
+        } else {
+            $inactive_users++;
+        }
+        
+        switch ($user['role']) {
+            case 'admin':
+                $admin_count++;
+                break;
+            case 'inventory_manager':
+                $inventory_manager_count++;
+                break;
+            case 'customer':
+                $customer_count++;
+                break;
+        }
+        
+        // Get users registered in last 30 days
+        if (strtotime($user['created_at']) > strtotime('-30 days')) {
+            $recent_registrations[] = $user;
+        }
+    }
+    
+    $data = [
+        'users' => $users,
+        'total_users' => $total_users,
+        'active_users' => $active_users,
+        'inactive_users' => $inactive_users,
+        'admin_count' => $admin_count,
+        'inventory_manager_count' => $inventory_manager_count,
+        'customer_count' => $customer_count,
+        'recent_registrations' => $recent_registrations,
+        'generated_at' => date('F j, Y g:i A'),
+        'pharmacy_name' => $pharmacy_name,
+        'pharmacy_address' => $pharmacy_address,
+        'pharmacy_phone' => $pharmacy_phone
+    ];
+    
+    render('admin/user_report', $data);
 }
 ?>
