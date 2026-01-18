@@ -1,3 +1,7 @@
+<?php 
+$pageTitle = 'Create User';
+include_once __DIR__ . '/../layouts/header.php';
+?>
 <!-- Create User Form -->
 <div class="container" style="padding: 20px; max-width: 800px; margin: 0 auto;">
     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
@@ -77,7 +81,7 @@
                        name="phone"
                        value="<?php echo htmlspecialchars(getPost('phone', '')); ?>"
                        style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 5px; font-size: 14px;"
-                       placeholder="+233 XXX XXX XXX">
+                       placeholder="+8801XXXXXXXXX">
             </div>
 
             <!-- Address -->
@@ -106,3 +110,5 @@
         </form>
     </div>
 </div>
+
+<?php include_once __DIR__ . '/../layouts/footer.php'; ?>
