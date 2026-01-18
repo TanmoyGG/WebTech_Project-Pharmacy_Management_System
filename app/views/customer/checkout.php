@@ -33,7 +33,12 @@ $user = $user ?? [];
             </div>
             <div style="margin-top: 15px; border-top: 1px solid #ddd; padding-top: 10px;">
                 <p>Subtotal: ৳ <?php echo number_format($totals['subtotal'] ?? 0, 2); ?></p>
-                <p>Tax (5%): ৳ <?php echo number_format($totals['tax'] ?? 0, 2); ?></p>
+                <?php 
+                $tax_rate_percent = (float) systemConfigGetValue('tax_rate', '5');
+                $subtotal = (float) ($totals['subtotal'] ?? 0);
+                $tax_display = $subtotal > 0 ? ($totals['tax'] ?? 0) : 0;
+                ?>
+                <p>Tax (<?php echo number_format($tax_rate_percent, 2); ?>%): ৳ <?php echo number_format($tax_display, 2); ?></p>
                 <p style="font-size: 16px; color: #007bff;"><strong>Total: ৳ <?php echo number_format($totals['total'] ?? 0, 2); ?></strong></p>
             </div>
         </div>
