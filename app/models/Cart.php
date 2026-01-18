@@ -1,6 +1,8 @@
 <?php
 // Cart Model - Procedural functions for carts and cart_items tables
 
+require_once __DIR__ . '/SystemConfig.php';
+
 // Guard against multiple inclusions
 if (function_exists('cartValidStatus')) {
     return;
@@ -183,7 +185,9 @@ function cartCalculateTotals($cart_id) {
     }
     
     $subtotal = (float) ($data['subtotal'] ?? 0);
-    $tax_rate = 0.05;  // 5% tax
+    // Get tax rate from system configuration (as percentage)
+    $tax_rate_percent = (float) systemConfigGetValue('tax_rate', '5');
+    $tax_rate = $tax_rate_percent / 100;  // Convert percentage to decimal
     $tax = $subtotal * $tax_rate;
     $total = $subtotal + $tax;
     
