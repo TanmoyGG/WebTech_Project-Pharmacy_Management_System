@@ -52,11 +52,11 @@
     </div>
     <div class="summary-card" style="border-left-color: #43e97b;">
         <div class="summary-label">Total Revenue</div>
-        <div class="summary-value">GHS <?php echo number_format($revenue, 2); ?></div>
+        <div class="summary-value">৳ <?php echo number_format($revenue, 2); ?></div>
     </div>
     <div class="summary-card" style="border-left-color: #f5576c;">
         <div class="summary-label">Average Order</div>
-        <div class="summary-value">GHS <?php echo count($orders) > 0 ? number_format($revenue / count($orders), 2) : '0.00'; ?></div>
+        <div class="summary-value">৳ <?php echo count($orders) > 0 ? number_format($revenue / count($orders), 2) : '0.00'; ?></div>
     </div>
     <div class="summary-card" style="border-left-color: #4facfe;">
         <div class="summary-label">Products Sold</div>
@@ -84,7 +84,7 @@
             <td><?php echo htmlspecialchars($product['name']); ?></td>
             <td style="color: #6c757d;"><?php echo htmlspecialchars($product['generic_name']); ?></td>
             <td style="font-weight: bold;"><?php echo $product['total_sold']; ?></td>
-            <td style="font-weight: bold; color: #28a745;">GHS <?php echo number_format($product['total_revenue'], 2); ?></td>
+            <td style="font-weight: bold; color: #28a745;">৳ <?php echo number_format($product['total_revenue'], 2); ?></td>
         </tr>
         <?php endforeach; ?>
     </tbody>
@@ -114,7 +114,7 @@
             <td><?php echo date('M d, Y', strtotime($order['created_at'])); ?></td>
             <td>User #<?php echo $order['user_id']; ?></td>
             <td>-</td>
-            <td style="font-weight: bold; color: #28a745;">GHS <?php echo number_format($order['total_amount'], 2); ?></td>
+            <td style="font-weight: bold; color: #28a745;">৳ <?php echo number_format($order['total_amount'], 2); ?></td>
             <td style="text-transform: uppercase; color: #667eea;"><?php echo $order['status']; ?></td>
         </tr>
         <?php endforeach; ?>
