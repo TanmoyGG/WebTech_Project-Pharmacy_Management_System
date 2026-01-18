@@ -44,29 +44,23 @@
     </div>
 </div>
 
-<!-- Summary Section -->
-<div class="summary-grid">
-    <div class="summary-card">
-        <div class="summary-label">Total Orders</div>
-        <div class="summary-value"><?php echo count($orders); ?></div>
-    </div>
-    <div class="summary-card" style="border-left-color: #43e97b;">
-        <div class="summary-label">Total Revenue</div>
-        <div class="summary-value">৳ <?php echo number_format($revenue, 2); ?></div>
-    </div>
-    <div class="summary-card" style="border-left-color: #f5576c;">
-        <div class="summary-label">Average Order</div>
-        <div class="summary-value">৳ <?php echo count($orders) > 0 ? number_format($revenue / count($orders), 2) : '0.00'; ?></div>
-    </div>
-    <div class="summary-card" style="border-left-color: #4facfe;">
-        <div class="summary-label">Products Sold</div>
-        <div class="summary-value"><?php echo count($topProducts); ?>+</div>
-    </div>
+<!-- Pharmacy Info -->
+<div style="text-align: center; margin-bottom: 40px; padding-bottom: 20px; border-bottom: 1px solid #e9ecef;">
+    <h3 style="margin: 0 0 5px 0; color: #2c3e50; font-size: 18px;">
+        <?php echo htmlspecialchars($pharmacy_name); ?>
+    </h3>
+    <p style="margin: 3px 0; color: #6c757d; font-size: 14px;">
+        <?php echo htmlspecialchars($pharmacy_address); ?>
+    </p>
+    <p style="margin: 3px 0; color: #6c757d; font-size: 14px;">
+        <?php echo htmlspecialchars($pharmacy_phone); ?>
+    </p>
 </div>
+
 
 <!-- Top Products Section -->
 <h2 style="color: #2c3e50; margin-bottom: 20px;">Top Selling Products</h2>
-<?php if (!empty($topProducts)): ?>
+<?php if (count($orders) > 0 && !empty($topProducts)): ?>
 <table>
     <thead>
         <tr>
@@ -89,8 +83,10 @@
         <?php endforeach; ?>
     </tbody>
 </table>
+<?php elseif (count($orders) > 0): ?>
+    <p style="text-align: center; color: #868e96; padding: 20px;">No product sales data available for this period.</p>
 <?php else: ?>
-<p style="text-align: center; color: #868e96; padding: 20px;">No product sales data available for this period.</p>
+    <p style="text-align: center; color: #868e96; padding: 20px;">No orders found for this period. No top products to display.</p>
 <?php endif; ?>
 
 <!-- Orders List -->
@@ -124,10 +120,26 @@
 <p style="text-align: center; color: #868e96; padding: 20px;">No orders found for this period.</p>
 <?php endif; ?>
 
+<!-- Summary Section -->
+<div style="margin-top: 30px; padding: 16px; border-top: 1px solid #e9ecef;">
+    <h3 style="color: #2c3e50; margin: 0 0 10px 0; font-size: 18px;">Summary</h3>
+    <div style="display: flex; flex-direction: column; gap: 8px; color: #2c3e50;">
+        <div><strong>Total Orders:</strong> <?php echo count($orders); ?></div>
+        <div><strong>Total Revenue:</strong> ৳ <?php echo number_format($revenue, 2); ?></div>
+        <div><strong>Average Order:</strong> ৳ <?php echo count($orders) > 0 ? number_format($revenue / count($orders), 2) : '0.00'; ?></div>
+        <div><strong>Products Sold:</strong> <?php echo count($orders) > 0 ? count($topProducts) : 0; ?></div>
+    </div>
+</div>
+
+<div style="margin-top: 20px; text-align: center; color: #6c757d; font-size: 14px;">
+    <p>This report provides insights into sales performance and order trends.</p>
+</div>
+
 <!-- Report Footer -->
 <div style="margin-top: 60px; padding-top: 20px; border-top: 2px solid #dee2e6; text-align: center; color: #6c757d; font-size: 12px;">
     <p>This is a computer-generated report. No signature required.</p>
-    <p>PharmaHealth Plus - Pharmacy Management System</p>
+    <p><?php echo htmlspecialchars($pharmacy_name); ?> - A Digital Solution of Pharmacy Management System</p>
+    <p><?php echo htmlspecialchars($pharmacy_phone); ?></p>
     <p>Page 1 of 1</p>
 </div>
 
