@@ -13,7 +13,6 @@ include_once __DIR__ . '/../layouts/header.php';
     .profile-section { margin-bottom: 25px; }
     .section-title { font-size: 16px; color: #2c3e50; margin-bottom: 15px; padding-bottom: 8px; border-bottom: 2px solid #ecf0f1; font-weight: 600; }
     .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
-    .info-item { }
     .info-label { font-size: 11px; color: #95a5a6; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; font-weight: 600; }
     .info-value { font-size: 14px; color: #2c3e50; font-weight: 500; }
     .info-value.empty { color: #bdc3c7; font-style: italic; }
@@ -104,11 +103,6 @@ include_once __DIR__ . '/../layouts/header.php';
         <a href="<?php echo BASE_URL; ?>profile/changePassword" class="btn btn-secondary">
             🔑 Change Password
         </a>
-        <?php if (getCurrentUserRole() === 'customer'): ?>
-            <a href="<?php echo BASE_URL; ?>customer/orderHistory" class="btn btn-secondary">
-                📦 Order History
-            </a>
-        <?php endif; ?>
     </div>
 </div>
 
