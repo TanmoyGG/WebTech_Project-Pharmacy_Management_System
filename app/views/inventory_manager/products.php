@@ -84,7 +84,7 @@ $status_filter = $status_filter ?? 'all';
                                     </span>
                                 </td>
                                 <td style="padding: 12px; text-align: center;">
-                                    <span style="padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold;
+                                    <span style="display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; white-space: nowrap;
                                                  background-color: <?php 
                                                      if ($product['status'] === 'available') echo '#d1e7dd';
                                                      elseif ($product['status'] === 'out_of_stock') echo '#fff3cd';
