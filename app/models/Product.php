@@ -71,52 +71,52 @@ function productUpdate($product_id, $name = null, $generic_name = null, $descrip
     
     if ($name !== null) {
         $updates[] = "name = ?";
-        $params[] = $name;
+        $params[] = &$name;
         $types .= 's';
     }
     if ($generic_name !== null) {
         $updates[] = "generic_name = ?";
-        $params[] = $generic_name;
+        $params[] = &$generic_name;
         $types .= 's';
     }
     if ($description !== null) {
         $updates[] = "description = ?";
-        $params[] = $description;
+        $params[] = &$description;
         $types .= 's';
     }
     if ($price !== null) {
         $updates[] = "price = ?";
-        $params[] = $price;
+        $params[] = &$price;
         $types .= 'd';
     }
     if ($low_stock_threshold !== null) {
         $updates[] = "low_stock_threshold = ?";
-        $params[] = $low_stock_threshold;
+        $params[] = &$low_stock_threshold;
         $types .= 'i';
     }
     if ($manufacture_date !== null) {
         $updates[] = "manufacture_date = ?";
-        $params[] = $manufacture_date;
+        $params[] = &$manufacture_date;
         $types .= 's';
     }
     if ($expiry_date !== null) {
         $updates[] = "expiry_date = ?";
-        $params[] = $expiry_date;
+        $params[] = &$expiry_date;
         $types .= 's';
     }
     if ($category_id !== null) {
         $updates[] = "category_id = ?";
-        $params[] = $category_id;
+        $params[] = &$category_id;
         $types .= 'i';
     }
     if ($quantity !== null) {
         $updates[] = "quantity = ?";
-        $params[] = $quantity;
+        $params[] = &$quantity;
         $types .= 'i';
     }
     if ($status !== null) {
         $updates[] = "status = ?";
-        $params[] = $status;
+        $params[] = &$status;
         $types .= 's';
     }
     
@@ -125,7 +125,7 @@ function productUpdate($product_id, $name = null, $generic_name = null, $descrip
     }
     
     $updates[] = "updated_at = CURRENT_TIMESTAMP";
-    $params[] = $product_id;
+    $params[] = &$product_id;
     $types .= 'i';
     
     $query = "UPDATE products SET " . implode(', ', $updates) . " WHERE id = ?";
