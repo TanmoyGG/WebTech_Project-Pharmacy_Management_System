@@ -112,11 +112,12 @@ $user = $user ?? [];
                         ?></td>
                     </tr>
                     <tr>
-                        <th style="text-align: left;">Tax (5%):</th>
-                        <td style="text-align: right;">৳<?php 
-                            $tax = $subtotal * 0.05;
-                            echo number_format($tax, 2);
-                        ?></td>
+                        <?php 
+                        $tax_rate_percent = (float) systemConfigGetValue('tax_rate', '5');
+                        $tax = $subtotal * ($tax_rate_percent / 100);
+                        ?>
+                        <th style="text-align: left;">Tax (<?php echo number_format($tax_rate_percent, 2); ?>%):</th>
+                        <td style="text-align: right;">৳<?php echo number_format($tax, 2); ?></td>
                     </tr>
                     <tr style="border-top: 2px solid #ddd; font-weight: bold;">
                         <th style="text-align: left;">Total Amount:</th>
