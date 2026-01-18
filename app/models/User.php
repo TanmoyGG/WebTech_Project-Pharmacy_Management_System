@@ -141,12 +141,18 @@ function userEmailExists($email, $excludeId = null) {
 }
 
 // Get all users with optional filters
-function userGetAll($role = null, $status = 'active', $limit = null, $offset = 0) {
+function userGetAll($role = null, $status = null, $limit = null, $offset = 0) {
     $db = getConnection();
     
-    $query = "SELECT * FROM users WHERE status = ?";
-    $types = 's';
-    $params = [$status];
+    $query = "SELECT * FROM users WHERE 1=1";
+    $types = '';
+    $params = [];
+    
+    if ($status !== null) {
+        $query .= " AND status = ?";
+        $types .= 's';
+        $params[] = $status;
+    }
     
     if ($role !== null) {
         $query .= " AND role = ?";
@@ -164,7 +170,15 @@ function userGetAll($role = null, $status = 'active', $limit = null, $offset = 0
     }
     
     $stmt = $db->prepare($query);
-    call_user_func_array([$stmt, 'bind_param'], array_merge([$types], $params));
+    if (!empty($types)) {
+        // bind_param requires references
+        $bind = array_merge([$types], $params);
+        $refs = [];
+        foreach ($bind as $k => $v) {
+            $refs[$k] = &$bind[$k];
+        }
+        call_user_func_array([$stmt, 'bind_param'], $refs);
+    }
     $stmt->execute();
     
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
