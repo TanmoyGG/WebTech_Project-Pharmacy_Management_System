@@ -4,7 +4,7 @@ include_once __DIR__ . '/../layouts/header.php';
 ?>
 
 <style>
-    .form-card { background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 600px; }
+    .form-card { background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
     .form-group { margin-bottom: 20px; }
     .form-label { display: block; font-size: 13px; font-weight: 600; color: #2c3e50; margin-bottom: 8px; }
     .form-input, .form-textarea { width: 100%; padding: 10px 12px; border: 2px solid #ecf0f1; border-radius: 5px; font-size: 13px; font-family: inherit; transition: all 0.3s ease; }
