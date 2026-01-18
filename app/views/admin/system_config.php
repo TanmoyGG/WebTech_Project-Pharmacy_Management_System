@@ -47,9 +47,9 @@ $settings = $settings ?? [];
                 </label>
                 <input type="tel" 
                        name="contact_phone" 
-                       value="<?php echo htmlspecialchars($settings['contact_phone'] ?? '+233 XXX XXX XXX'); ?>"
+                       value="<?php echo htmlspecialchars($settings['contact_phone'] ?? '+880 XXXX-XXXXXX'); ?>"
                        style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 5px; font-size: 14px;"
-                       placeholder="+233 XXX XXX XXX">
+                       placeholder="+880 XXXX-XXXXXX">
                 <small style="color: #6c757d; font-size: 12px;">Primary contact number for inquiries</small>
             </div>
 
@@ -61,7 +61,7 @@ $settings = $settings ?? [];
                 <textarea name="address" 
                           rows="3"
                           style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 5px; font-size: 14px; resize: vertical;"
-                          placeholder="Enter complete address"><?php echo htmlspecialchars($settings['address'] ?? 'Accra, Ghana'); ?></textarea>
+                          placeholder="Enter complete address"><?php echo htmlspecialchars($settings['address'] ?? 'Dhaka, Bangladesh'); ?></textarea>
                 <small style="color: #6c757d; font-size: 12px;">Full physical address of the pharmacy</small>
             </div>
 
@@ -78,7 +78,7 @@ $settings = $settings ?? [];
                        value="<?php echo htmlspecialchars($settings['tax_rate'] ?? '12.5'); ?>"
                        style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 5px; font-size: 14px;"
                        placeholder="0.00">
-                <small style="color: #6c757d; font-size: 12px;">Enter the applicable tax rate (e.g., 12.5 for 12.5% VAT)</small>
+                <small style="color: #6c757d; font-size: 12px;">⚠️ Enter the applicable tax rate (e.g., 12.5 for 12.5% VAT). This will automatically apply to ALL customer purchases at checkout!</small>
             </div>
 
             <!-- Divider -->
