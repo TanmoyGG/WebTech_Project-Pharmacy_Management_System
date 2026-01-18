@@ -1,3 +1,7 @@
+<?php 
+$pageTitle = 'Edit User';
+include_once __DIR__ . '/../layouts/header.php';
+?>
 <!-- Edit User Form -->
 <div class="container" style="padding: 20px; max-width: 800px; margin: 0 auto;">
     <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 30px;">
@@ -23,27 +27,26 @@
                 </span>
             </div>
 
-            <!-- Name -->
+            <!-- Name (read-only) -->
             <div style="margin-bottom: 20px;">
                 <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50;">
-                    Full Name <span style="color: #dc3545;">*</span>
+                    Full Name
                 </label>
                 <input type="text" 
                        name="name" 
-                       required 
-                       minlength="3"
+                       readonly
                        value="<?php echo htmlspecialchars($user['name']); ?>"
                        style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 5px; font-size: 14px;">
             </div>
 
-            <!-- Email -->
+            <!-- Email (read-only) -->
             <div style="margin-bottom: 20px;">
                 <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50;">
-                    Email Address <span style="color: #dc3545;">*</span>
+                    Email Address
                 </label>
                 <input type="email" 
                        name="email" 
-                       required
+                       readonly
                        value="<?php echo htmlspecialchars($user['email']); ?>"
                        style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 5px; font-size: 14px;">
             </div>
@@ -80,7 +83,7 @@
                 <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2c3e50;">
                     Phone Number
                 </label>
-                <input type="tel" 
+                  <input type="tel" 
                        name="phone"
                        value="<?php echo htmlspecialchars($user['phone'] ?? ''); ?>"
                        style="width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 5px; font-size: 14px;">
@@ -121,3 +124,5 @@
         </form>
     </div>
 </div>
+
+    <?php include_once __DIR__ . '/../layouts/footer.php'; ?>
