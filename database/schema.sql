@@ -43,7 +43,7 @@ CREATE TABLE products (
 	low_stock_threshold INT DEFAULT 10, 
 	manufacture_date DATE,
 	expiry_date DATE, -- Student 2: Expiry Tracking
-	status ENUM('available', 'discontinued') DEFAULT 'available',
+	status ENUM('available', 'out_of_stock', 'discontinued') DEFAULT 'available',
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 	FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE SET NULL
@@ -76,7 +76,7 @@ CREATE TABLE orders (
 	id INT AUTO_INCREMENT PRIMARY KEY,
 	user_id INT NOT NULL,
 	total_amount DECIMAL(10, 2) NOT NULL,
-	status ENUM('pending', 'shipped', 'completed', 'cancelled') DEFAULT 'pending',
+	status ENUM('pending', 'confirmed', 'shipped', 'completed', 'cancelled') DEFAULT 'pending',
 	delivery_address TEXT NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
