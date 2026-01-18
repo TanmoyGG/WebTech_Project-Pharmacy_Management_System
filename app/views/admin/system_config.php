@@ -4,12 +4,12 @@ include_once __DIR__ . '/../layouts/header.php';
 $settings = $settings ?? [];
 ?>
 
-<div class="container" style="margin-top: 20px;">
-    <h1 style="color: #2c3e50; margin-bottom: 20px;">
+<div style="max-width: 800px; margin: 0 auto;">
+    <h1 style="color: #2c3e50; margin-bottom: 20px; margin-top: 0;">
         <i class="fas fa-cog"></i> System Configuration
     </h1>
 
-    <div class="card" style="max-width: 800px; margin: 0 auto;">
+    <div class="card">
         <div class="card-header">Configuration Settings</div>
         <div class="card-body">
             <form method="POST" action="<?php echo BASE_URL; ?>admin/saveSystemConfig" id="systemConfigForm">
