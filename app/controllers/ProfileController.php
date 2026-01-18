@@ -2,12 +2,24 @@
 // Profile Controller - User profile management
 // All functions follow procedural pattern: profile_[action]()
 
+require_once __DIR__ . '/../models/User.php';
+
+// Default profile route (redirect to view)
+function profile_index() {
+    profile_view();
+}
+
 // Display user profile
 function profile_view() {
     requireAuth();
     
     $userId = getCurrentUserId();
-    $user = getById('users', $userId);
+    $user = userGetById($userId);
+    
+    if (!$user) {
+        setFlash('User not found', 'error');
+        redirectTo('home');
+    }
     
     render('profile/view', ['user' => $user]);
 }
@@ -17,7 +29,12 @@ function profile_edit() {
     requireAuth();
     
     $userId = getCurrentUserId();
-    $user = getById('users', $userId);
+    $user = userGetById($userId);
+    
+    if (!$user) {
+        setFlash('User not found', 'error');
+        redirectTo('home');
+    }
     
     render('profile/edit', ['user' => $user]);
 }
@@ -32,36 +49,80 @@ function profile_update() {
     
     $userId = getCurrentUserId();
     $name = sanitize(getPost('name', ''));
-    $email = sanitizeEmail(getPost('email', ''));
     $phone = sanitize(getPost('phone', ''));
+    $dob = sanitize(getPost('dob', ''));
     $address = sanitize(getPost('address', ''));
     
-    if (isEmpty($name) || isEmpty($email)) {
-        setFlash('Name and email are required', 'error');
+    // Validate required fields
+    if (isEmpty($name)) {
+        setFlash('Name is required', 'error');
         redirectTo('profile/edit');
     }
     
-    $existingUser = fetchOne('SELECT id FROM users WHERE email = ? AND id != ?', 'ss', [$email, $userId]);
+    // Update profile using User model
+    $updated = userUpdate($userId, $name, $phone, $dob, $address);
     
-    if ($existingUser) {
-        setFlash('Email is already in use', 'error');
+    if ($updated) {
+        $_SESSION['user_name'] = $name;
+        setFlash('Profile updated successfully', 'success');
+        redirectTo('profile/view');
+    } else {
+        setFlash('Failed to update profile', 'error');
         redirectTo('profile/edit');
     }
+}
+
+// Display change password page
+function profile_changePassword() {
+    requireAuth();
+    render('profile/changePassword');
+}
+
+// Update user password
+function profile_updatePassword() {
+    requireAuth();
     
-    $updateData = [
-        'name' => $name,
-        'email' => $email,
-        'phone' => $phone,
-        'address' => $address,
-        'updated_at' => date('Y-m-d H:i:s')
-    ];
+    if (!isPost()) {
+        redirectTo('profile/view');
+    }
     
-    updateRecord('users', $updateData, 'id = ?', [$userId]);
+    $userId = getCurrentUserId();
+    $currentPassword = getPost('current_password', '');
+    $newPassword = getPost('new_password', '');
+    $confirmPassword = getPost('confirm_password', '');
     
-    $_SESSION['user_name'] = $name;
-    $_SESSION['user_email'] = $email;
+    // Validate inputs
+    if (isEmpty($currentPassword) || isEmpty($newPassword) || isEmpty($confirmPassword)) {
+        setFlash('All password fields are required', 'error');
+        redirectTo('profile/changePassword');
+    }
     
-    setFlash('Profile updated successfully', 'success');
-    redirectTo('profile/view');
+    if ($newPassword !== $confirmPassword) {
+        setFlash('New password and confirmation do not match', 'error');
+        redirectTo('profile/changePassword');
+    }
+    
+    if (strlen($newPassword) < 8) {
+        setFlash('Password must be at least 8 characters long', 'error');
+        redirectTo('profile/changePassword');
+    }
+    
+    // Get current user and verify password
+    $user = userGetById($userId);
+    if (!$user || !password_verify($currentPassword, $user['password'])) {
+        setFlash('Current password is incorrect', 'error');
+        redirectTo('profile/changePassword');
+    }
+    
+    // Update password using User model
+    $updated = userUpdatePassword($userId, $newPassword);
+    
+    if ($updated) {
+        setFlash('Password changed successfully', 'success');
+        redirectTo('profile/view');
+    } else {
+        setFlash('Failed to update password', 'error');
+        redirectTo('profile/changePassword');
+    }
 }
 ?>
