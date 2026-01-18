@@ -1,1 +1,0 @@
-// Inventory Manager specific JavaScript

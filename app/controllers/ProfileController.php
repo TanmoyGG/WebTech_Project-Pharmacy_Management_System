@@ -102,14 +102,14 @@ function profile_updatePassword() {
         redirectTo('profile/changePassword');
     }
     
-    if (strlen($newPassword) < 6) {
+    if (!validatePassword($newPassword)) {
         setFlash('Password must be at least 6 characters long', 'error');
         redirectTo('profile/changePassword');
     }
     
     // Get current user and verify password
     $user = userGetById($userId);
-    if (!$user || !password_verify($currentPassword, $user['password'])) {
+    if (!$user || !verifyPassword($currentPassword, $user['password'])) {
         setFlash('Current password is incorrect', 'error');
         redirectTo('profile/changePassword');
     }

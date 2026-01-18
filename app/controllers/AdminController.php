@@ -710,4 +710,11 @@ function admin_generateUserReport() {
     
     render('admin/user_report', $data);
 }
+
+// Display reports page (from ReportController)
+function admin_reportsIndex() {
+    requireRole('admin');
+    
+    render('admin/reports');
+}
 ?>

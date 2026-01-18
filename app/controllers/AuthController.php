@@ -130,7 +130,7 @@ function auth_registerProcess() {
     
     if (isEmpty($password)) {
         $errors['password'] = 'Password is required';
-    } elseif (!validateLength($password, 6, 255)) {
+    } elseif (!validatePassword($password)) {
         $errors['password'] = 'Password must be at least 6 characters';
     }
     
@@ -225,7 +225,7 @@ function auth_changePasswordProcess() {
     }
     
     // Validate new password
-    if (isEmpty($newPassword) || !validateLength($newPassword, 6, 255)) {
+    if (isEmpty($newPassword) || !validatePassword($newPassword)) {
         setFlash('New password must be at least 6 characters', 'error');
         redirectTo('auth/change_password');
     }
