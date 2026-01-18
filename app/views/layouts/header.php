@@ -7,11 +7,15 @@
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/assets/css/style.css">
 </head>
 <body>
+    <?php require_once __DIR__ . '/../../models/SystemConfig.php'; ?>
     <!-- Navigation Bar -->
     <nav class="navbar">
         <div class="container">
             <div class="navbar-brand">
-                <a href="<?php echo BASE_URL; ?>">🏥 Pharmacy Management System</a>
+                <?php 
+                $pharmacy_name = systemConfigGetValue('pharmacy_name', 'Pharmacy Management System');
+                ?>
+                <a href="<?php echo BASE_URL; ?>">🏥 <?php echo htmlspecialchars($pharmacy_name); ?></a>
             </div>
             
             <?php if (isLoggedIn()): ?>
