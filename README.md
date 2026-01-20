@@ -264,7 +264,17 @@ fetch(form.action, {
 | `/customer/addToCart` | AJAX endpoint (POST, returns JSON) |
 
 ### Screenshots
-_Place screenshots here (home, about, admin dashboard, inventory dashboard, customer shop, AJAX search, cart with feedback messages)._ 
+- Index page – [![1.png](https://i.postimg.cc/jdRKXpK3/1.png)](https://postimg.cc/CdrWM6Rb)
+- About page – [![2.png](https://i.postimg.cc/RqxWsXSc/2.png)](https://postimg.cc/gL4cry6J)
+- Customer dashboard – [![3.png](https://i.postimg.cc/mgNXTgnx/3.png)](https://postimg.cc/cvCMm0ZT)
+- Customer order page – [![4.png](https://i.postimg.cc/SQ2gJr5m/4.png)](https://postimg.cc/Sj46PWkP)
+- Inventory manager dashboard – [![5.png](https://i.postimg.cc/mrgwRNMJ/5.png)](https://postimg.cc/bZ4b9nm9)
+- Inventory manager order management – [![6.png](https://i.postimg.cc/ZKzx0hp8/6.png)](https://postimg.cc/23TZXMHy)
+- Inventory manager product management – [![7.png](https://i.postimg.cc/W4zMxpcL/7.png)](https://postimg.cc/hJFzdBGp)
+- Inventory manager expired products – [![8.png](https://i.postimg.cc/jjD7Z8ys/8.png)](https://postimg.cc/Z9hnqxfg)
+- Admin dashboard – [![9.png](https://i.postimg.cc/FsGkmtZm/9.png)](https://postimg.cc/KRk8rHws)
+- Admin inventory oversight – [![10.png](https://i.postimg.cc/VsWdBy25/10.png)](https://postimg.cc/nMMFpWFt)
+- Admin transaction history – [![11.png](https://i.postimg.cc/wvcTVJ47/11.png)](https://postimg.cc/G8tC3BCC)
 
 ### Contributing
 - Issues/PRs welcome. Please: 
