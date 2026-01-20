@@ -1,4 +1,5 @@
-<?php $pageTitle = 'About'; include_once __DIR__ . '/../layouts/header.php'; ?>
+<?php $pageTitle = 'About'; 
+include_once __DIR__ . '/../layouts/header.php'; ?>
 
 <div class="page-hero">
     <div class="hero-content">

@@ -1,1 +1,0 @@
-<!-- Stock Adjustment - Inventory Manager -->

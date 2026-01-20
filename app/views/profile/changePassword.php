@@ -67,24 +67,6 @@ include_once __DIR__ . '/../layouts/header.php';
     </form>
 </div>
 
-<script>
-    // Client-side validation
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const newPassword = document.getElementById('new_password').value;
-        const confirmPassword = document.getElementById('confirm_password').value;
-        
-        if (newPassword !== confirmPassword) {
-            e.preventDefault();
-            alert('New password and confirmation do not match!');
-            return false;
-        }
-        
-        if (newPassword.length < 6) {
-            e.preventDefault();
-            alert('Password must be at least 6 characters long!');
-            return false;
-        }
-    });
-</script>
-
 <?php include_once __DIR__ . '/../layouts/footer.php'; ?>
+
+<script src="<?php echo BASE_URL; ?>/assets/js/change-password.js"></script>

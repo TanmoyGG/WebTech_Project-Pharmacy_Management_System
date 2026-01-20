@@ -1,8 +1,9 @@
 <?php $pageTitle = 'Register'; include_once __DIR__ . '/../layouts/header.php'; ?>
 
-<div class="card" style="max-width: 600px; margin: 40px auto;">
-	<div class="card-header">Create Your Customer Account</div>
-	<div class="card-body">
+<div class="auth-form-wrapper">
+	<div class="card" style="max-width: 600px;">
+		<div class="card-header">Create Your Customer Account</div>
+		<div class="card-body">
 		<!-- Display errors if any -->
 		<?php if (isset($_SESSION['errors']) && !empty($_SESSION['errors'])): ?>
 			<div class="alert alert-danger" style="margin-bottom: 20px;">
@@ -71,39 +72,8 @@
 		</p>
 	</div>
 </div>
+</div>
 
-<script>
-function validateRegistrationForm() {
-	const name = document.getElementById('name').value.trim();
-	const email = document.getElementById('email').value.trim();
-	const password = document.getElementById('password').value;
-	const confirmPassword = document.getElementById('confirm_password').value;
+<?php unset($_SESSION['form_data']); include_once __DIR__ . '/../layouts/footer.php'; ?>
 
-	if (name.length < 3) {
-		alert('Name must be at least 3 characters long');
-		return false;
-	}
-
-	if (!email.includes('@')) {
-		alert('Please enter a valid email address');
-		return false;
-	}
-
-	if (password.length < 6) {
-		alert('Password must be at least 6 characters long');
-		return false;
-	}
-
-	if (password !== confirmPassword) {
-		alert('Passwords do not match');
-		return false;
-	}
-
-	return true;
-}
-
-// Clear form data from session after displaying
-<?php unset($_SESSION['form_data']); ?>
-</script>
-
-<?php include_once __DIR__ . '/../layouts/footer.php'; ?>
+<script src="<?php echo BASE_URL; ?>/assets/js/auth.js"></script>

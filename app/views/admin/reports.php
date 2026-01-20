@@ -134,17 +134,6 @@ include_once __DIR__ . '/../layouts/header.php';
     </p>
 </div>
 
-<script>
-document.getElementById('reportType').addEventListener('change', function() {
-    const monthSelection = document.getElementById('monthSelection');
-    if (this.value === 'monthly') {
-        monthSelection.style.display = 'block';
-    } else {
-        monthSelection.style.display = 'none';
-    }
-});
-</script>
-
 <?php include_once __DIR__ . '/../layouts/footer.php'; ?>
 
-<?php include_once __DIR__ . '/../layouts/footer.php'; ?>
+<script src="<?php echo BASE_URL; ?>/assets/js/reports.js"></script>

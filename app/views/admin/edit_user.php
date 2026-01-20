@@ -125,4 +125,4 @@ include_once __DIR__ . '/../layouts/header.php';
     </div>
 </div>
 
-    <?php include_once __DIR__ . '/../layouts/footer.php'; ?>
+<?php include_once __DIR__ . '/../layouts/footer.php'; ?>

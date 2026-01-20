@@ -1,8 +1,9 @@
 <?php $pageTitle = 'Login'; include_once __DIR__ . '/../layouts/header.php'; ?>
 
-<div class="card" style="max-width: 480px; margin: 40px auto;">
-	<div class="card-header">Login</div>
-	<div class="card-body">
+<div class="auth-form-wrapper">
+	<div class="card" style="max-width: 480px;">
+		<div class="card-header">Login</div>
+		<div class="card-body">
 		<form id="loginForm" action="<?php echo BASE_URL; ?>/auth/loginProcess" method="POST" onsubmit="return validateForm('loginForm');">
 			<div class="form-group">
 				<label for="email">Email</label>
@@ -30,19 +31,8 @@
 		</p>
 	</div>
 </div>
+</div>
 
-<script>
-// Toggle password visibility
-document.getElementById('togglePassword').addEventListener('click', function() {
-	const passwordField = document.getElementById('password');
-	const toggleBtn = document.getElementById('togglePassword');
-	
-	if (passwordField.type === 'password') {
-		passwordField.type = 'text';
-		toggleBtn.textContent = '🙈';
-	} else {
-		passwordField.type = 'password';
-		toggleBtn.textContent = '👁️';
-	}
-});
-</script>
+<?php include_once __DIR__ . '/../layouts/footer.php'; ?>
+
+<script src="<?php echo BASE_URL; ?>/assets/js/auth.js"></script>
