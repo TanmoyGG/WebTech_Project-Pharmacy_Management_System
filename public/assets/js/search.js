@@ -1,6 +1,5 @@
-/**
- * Real-time Medicine Search (Client-side logic)
- */
+//Real-time Medicine Search using AJAX
+
 
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
@@ -37,12 +36,26 @@ function loadProducts(searchQuery) {
     const baseUrl = window.BASE_URL || '';
     
     // Make AJAX request
-    fetch(baseUrl + 'customer/searchMedicines?q=' + encodeURIComponent(searchQuery))
-        .then(response => {
+    fetch(baseUrl + 'customer/searchMedicines?q=' + encodeURIComponent(searchQuery), {
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+        .then(async response => {
             if (!response.ok) {
                 throw new Error('HTTP error ' + response.status);
             }
-            return response.json();
+            const contentType = response.headers.get('content-type') || '';
+            const text = await response.text();
+            if (!contentType.includes('application/json')) {
+                throw new Error('Non-JSON response (maybe auth redirect): ' + text.substring(0, 120));
+            }
+            try {
+                return JSON.parse(text);
+            } catch (parseErr) {
+                throw new Error('Invalid JSON: ' + parseErr.message);
+            }
         })
         .then(data => {
             console.log('API Response:', data);
@@ -61,7 +74,7 @@ function loadProducts(searchQuery) {
         })
         .catch(error => {
             console.error('Search error:', error);
-            productsContainer.innerHTML = '<p class="text-danger" style="text-align: center; padding: 20px;">Error loading products: ' + error.message + '</p>';
+            productsContainer.innerHTML = '<p class="text-danger" style="text-align: center; padding: 20px;">Error loading products: ' + escapeHtml(error.message) + '</p>';
         });
 }
 
@@ -85,7 +98,7 @@ function displayProducts(products) {
                 <p style="font-size: 12px; color: #666; margin-bottom: 10px;">${escapeHtml(desc)}</p>
                 <p class="price">৳ ${parseFloat(product.price).toFixed(2)}</p>
                 <p class="stock">Stock: ${parseInt(product.quantity)}</p>
-                <form action="${baseUrl}customer/addToCart" method="POST">
+                <form class="add-to-cart-form" action="${baseUrl}customer/addToCart" method="POST">
                     <input type="hidden" name="product_id" value="${parseInt(product.id)}">
                     <div style="margin-bottom: 10px;">
                         <label for="qty_${parseInt(product.id)}">Quantity:</label>
