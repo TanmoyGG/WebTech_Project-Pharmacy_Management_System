@@ -1,6 +1,5 @@
 <?php
 // Order Controller - Order processing and management
-// All functions follow procedural pattern: order_[action]()
 
 require_once __DIR__ . '/../models/Order.php';
 require_once __DIR__ . '/../models/OrderItem.php';

@@ -1,6 +1,5 @@
 <?php
 // Product Controller - Product management operations
-// All functions follow procedural pattern: product_[action]()
 
 require_once __DIR__ . '/../models/Product.php';
 require_once __DIR__ . '/../models/Category.php';

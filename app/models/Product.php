@@ -1,5 +1,4 @@
 <?php
-// Product Model - Medicine/Product data operations (Procedural)
 // Handles all product/medicine database operations
 
 // Ensure database helpers are loaded for static analysis and runtime

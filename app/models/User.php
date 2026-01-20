@@ -1,5 +1,4 @@
 <?php
-// User Model - Procedural Database Functions
 // Handles all user-related database operations for unified users table
 
 // Guard against multiple inclusions

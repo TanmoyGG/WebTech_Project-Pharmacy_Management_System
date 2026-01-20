@@ -1,6 +1,5 @@
 <?php
 // Authentication Controller - Handles login, register, forgot password, change password
-// All functions follow procedural pattern: auth_[action]()
 
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../../helpers/cookie_helper.php';

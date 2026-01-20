@@ -1,6 +1,5 @@
 <?php
 // Admin Controller - Master Admin functionalities
-// All functions follow procedural pattern: admin_[action]()
 
 require_once __DIR__ . '/../models/User.php';
 require_once __DIR__ . '/../models/Product.php';

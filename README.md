@@ -1,352 +1,276 @@
-# Pharmacy Management System
+## Pharmacy Management System
+> Role-aware pharmacy operations (admin, inventory, customer) in a lean procedural PHP MVC stack with modern AJAX interactions.
 
-## Description
-A comprehensive web-based Pharmacy Management System built with PHP, MySQL, HTML, CSS, and JavaScript following **MVC Architecture with Procedural Programming**. No OOP classes used - all functionality implemented through procedural functions for simplicity and direct control.
+![version](https://img.shields.io/badge/version-1.1.0-blue) ![license](https://img.shields.io/badge/license-Educational-green) ![build](https://img.shields.io/badge/build-manual-lightgrey) [![php](https://img.shields.io/badge/PHP-8+-777BB4?logo=php&logoColor=white)](https://www.php.net/) [![javascript](https://img.shields.io/badge/JavaScript-ES6+-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript) ![ajax](https://img.shields.io/badge/AJAX-Fetch%20API-brightgreen)
 
-## Features
+### Why & What
+- Purpose: run a small/medium pharmacy with clear ownership—admins handle users/reports, inventory managers handle stock/expiry, customers order safely.
+- Philosophy: keep it simple (procedural PHP, no heavy frameworks), but still structured (MVC), secure (prepared statements + hashed passwords), and fast to deploy on XAMPP/Apache.
+- Modern UX: real-time search and AJAX cart operations for seamless customer experience.
 
-### Common Features (All Users)
-- Login/Sign in
-- Registration/Signup
-- Forget Password
-- Change Password
-- Profile (Update + View)
-- Logout
+### Tech Stack
+- **Backend:** PHP 8+, MySQL (mysqli), procedural MVC, `.htaccess` routing
+- **Frontend:** HTML5, CSS (custom), vanilla JS (ES6+, Fetch API)
+- **Server:** Apache (XAMPP-friendly)
+- **AJAX:** Fetch API for real-time search and cart operations
 
-### Master Admin (Student 1)
-- User Management: Create, update, or deactivate Inventory Manager and Customer accounts
-- Sales Analytics Dashboard: View total revenue, most sold products, and daily order counts
-- Transaction History: View a complete log of all purchases made on the platform
-- System Configuration: Edit website settings (pharmacy name, contact info, tax rates)
-- Inventory Oversight: View and control all medicines and inventory
-- Report Generation: Export monthly sales or stock reports as PDF
+### Features
+- **Auth:** register, login, remember-me, role-based redirects
+- **Admin:** dashboards, user management, transactions, system config, reports
+- **Inventory Manager:** product CRUD, low-stock and expiry tracking, price/stock adjustments, order visibility
+- **Customer:** browse medicines (real-time search), cart with AJAX, checkout, order history
+- **AJAX Features:**
+  - Real-time medicine search (GET) – [search.js](#searchjs)
+  - Add to cart (POST) – [cart.js](#cartjs)
+  - Duplicate detection & stock validation
+  - Inline feedback (success/error messages)
+- **UX:** flash messages, responsive layout, clean navigation, debounced search
 
-### Inventory Manager (Student 2)
-- Product Entry: Add new medicines with details (name, generic name, category, etc.)
-- Category Management: Organize medicines into groups (Painkillers, Antibiotics, Vitamins)
-- Stock Adjustment: Manage medicine stock (increase/decrease quantity)
-- Expiry Tracking: Monitor and list expiration dates for medicines
-- Low Stock Alerts: Receive notifications when medicine falls below certain quantity
-- Price Management: Set and update retail prices and apply discounts
-- View orders placed by customers
-
-### Customer (Student 3)
-- Browse available medicines
-- Product Search & Filter: Search by name or filter by category/price
-- Digital Shopping Cart: Add multiple medicines to cart before checkout
-- Order Placement: Confirm purchases and provide delivery addresses
-- Order History: View list of past orders and their status (Pending/Shipped)
-
-## Technologies
-- **Backend:** PHP 7.4+ (100% Procedural Programming - No OOP Classes)
-- **Database:** MySQL 5.7+
-- **Frontend:** HTML5, CSS3, JavaScript (ES6+)
-- **Server:** XAMPP (Apache 2.4+)
-- **Architecture:** MVC (Procedural Style)
-
-## Installation
-1. Place the project folder in `xampp/htdocs/`
-2. Create MySQL database: `pharmacy_management`
-3. Import schema: `mysql -u root pharmacy_management < database/schema.sql`
-4. Update database credentials in `config/database.php`
-5. Access at: `http://localhost/WebTech_Project-Pharmacy_Management_System/public/`
-
-## Project Structure (MVC with Procedural Programming)
-
+### Project Structure
 ```
-WebTech_Project-Pharmacy_Management_System/
-├── app/
-│   ├── controllers/              # All procedural functions
-│   │   ├── AuthController.php    # Functions: auth_login(), auth_register(), auth_logout()
-│   │   ├── AdminController.php   # Functions: admin_dashboard(), admin_userManagement()
-│   │   ├── InventoryManagerController.php
-│   │   ├── CustomerController.php
-│   │   ├── ProductController.php
-│   │   ├── OrderController.php
-│   │   ├── UserController.php
-│   │   ├── ReportController.php
-│   │   ├── HomeController.php
-│   │   └── ProfileController.php
-│   │
-│   ├── models/                   # Data operation functions
-│   │   ├── User.php              # userGetById(), userCreate(), userUpdate()
-│   │   ├── Product.php           # productGetById(), productSearch(), productGetLowStock()
-│   │   ├── Category.php          # categoryGetAll(), categoryCreate(), categoryUpdate()
-│   │   ├── Order.php             # orderGetByUser(), orderCreate(), orderUpdateStatus()
-│   │   ├── OrderItem.php         # orderItemCreate(), orderItemGetByOrder()
-│   │   ├── Cart.php              # cartGetOrCreate(), cartAddItem(), cartGetTotal()
-│   │   ├── Transaction.php       # transactionCreate(), transactionGetByDateRange()
-│   │   └── SystemConfig.php      # configGet(), configSet(), configGetTaxRate()
-│   │
-│   └── views/                    # View templates (HTML + PHP)
-│       ├── layouts/
-│       │   ├── header.php
-│       │   ├── footer.php
-│       │   └── sidebar.php
-│       ├── auth/
-│       │   ├── login.php
-│       │   ├── register.php
-│       │   ├── forgot_password.php
-│       │   └── change_password.php
-│       ├── admin/
-│       │   ├── dashboard.php
-│       │   ├── user_management.php
-│       │   ├── sales_analytics.php
-│       │   ├── transaction_history.php
-│       │   ├── system_config.php
-│       │   ├── inventory_oversight.php
-│       │   └── reports.php
-│       ├── inventory_manager/
-│       │   ├── dashboard.php
-│       │   ├── product_entry.php
-│       │   ├── category_management.php
-│       │   ├── stock_adjustment.php
-│       │   ├── expiry_tracking.php
-│       │   ├── low_stock_alerts.php
-│       │   ├── price_management.php
-│       │   └── view_orders.php
-│       ├── customer/
-│       │   ├── home.php
-│       │   ├── browse_medicines.php
-│       │   ├── product_search.php
-│       │   ├── cart.php
-│       │   ├── checkout.php
-│       │   └── order_history.php
-│       ├── profile/
-│       │   ├── view.php
-│       │   └── edit.php
-│       └── home/
-│           ├── index.php
-│           ├── about.php
-│           └── contact.php
+index.php                      # single entry (routes + static asset guard)
+.htaccess                      # rewrites to index.php
+test_db_connection.php         # database connection test utility
+config/
+  └── config.php               # app constants, BASE_URL, DB creds, timezone
+core/
+  ├── App.php                  # router, render, error helper
+  ├── Controller.php           # auth/role helpers, redirect, flash
+  ├── Database.php             # mysqli init + query helpers
+  └── Model.php                # helper base (kept for structure)
+helpers/
+  ├── session_helper.php       # session start, user data getters
+  ├── cookie_helper.php        # cookie management
+  ├── url_helper.php           # BASE_URL, redirect helpers
+  └── validation_helper.php    # form validation helpers
+app/
+  ├── controllers/
+  │   ├── HomeController.php           # home/about pages
+  │   ├── AuthController.php           # login, register, logout
+  │   ├── AdminController.php          # admin dashboard, user management, reports
+  │   ├── CustomerController.php       # browse, search (AJAX), cart, orders
+  │   ├── InventoryManagerController.php # product CRUD, low stock, expiry tracking
+  │   ├── ProductController.php        # product operations (shared logic)
+  │   ├── OrderController.php          # order operations
+  │   └── ProfileController.php        # user profile, change password
+  ├── models/
+  │   ├── User.php              # user queries, auth
+  │   ├── Product.php           # product queries, search, stock
+  │   ├── Cart.php              # cart operations
+  │   ├── Order.php             # order queries
+  │   ├── OrderItem.php         # order item operations
+  │   ├── Category.php          # category queries
+  │   ├── Transaction.php       # transaction records
+  │   └── SystemConfig.php      # system settings
+  └── views/
+      ├── layouts/
+      │   ├── header.php               # nav, role-aware menu
+      │   └── footer.php               # footer, script tags
+      ├── admin/
+      │   ├── dashboard.php            # admin dashboard
+      │   ├── users.php                # user list
+      │   ├── create_user.php          # create user form
+      │   ├── edit_user.php            # edit user form
+      │   ├── reports.php              # report filters (uses reports.js)
+      │   ├── sales_report.php         # sales analytics
+      │   ├── stock_report.php         # stock analytics
+      │   ├── user_report.php          # user activity report
+      │   ├── transaction_history.php  # transaction log
+      │   ├── inventory_oversight.php  # inventory overview
+      │   ├── edit_product.php         # edit product form
+      │   └── system_config.php        # system settings
+      ├── inventory_manager/
+      │   ├── dashboard.php            # inventory dashboard
+      │   ├── products.php             # product list
+      │   ├── add_product.php          # add product form (uses product-validation.js)
+      │   ├── edit_product.php         # edit product form (uses product-validation.js)
+      │   ├── low_stock.php            # low stock alerts
+      │   ├── expiring_items.php       # expiring soon items
+      │   ├── expired_items.php        # expired items
+      │   ├── orders.php               # orders for fulfillment
+      │   └── order_details.php        # order item details
+      ├── customer/
+      │   ├── home.php                 # featured products (uses cart.js)
+      │   ├── browse_medicines.php     # search + browse (uses search.js & cart.js)
+      │   ├── product_search.php       # search results page
+      │   ├── cart.php                 # cart view & checkout
+      │   ├── checkout.php             # checkout process
+      │   ├── order_history.php        # customer's past orders
+      │   └── order_details.php        # order details view
+      ├── auth/
+      │   ├── login.php                # login form (uses auth.js)
+      │   └── register.php             # registration form (uses auth.js)
+      └── profile/
+          ├── view.php                 # user profile view
+          ├── edit.php                 # edit profile form
+          └── changePassword.php       # change password form (uses change-password.js)
+public/
+  └── assets/
+      ├── css/
+      │   └── style.css                # main stylesheet (responsive layout, components)
+      └── js/
+          ├── main.js                  # shared helpers (flash fade, form validation)
+          ├── search.js                # real-time medicine search (GET AJAX)
+          ├── cart.js                  # add-to-cart handler (POST AJAX)
+          ├── auth.js                  # login/register form validation & toggle
+          ├── product-validation.js    # product add/edit form validation
+          ├── reports.js               # report filters & UI toggles
+          └── change-password.js       # password match validation
+database/                      # schema or seed scripts
+```
+
+### Request Flow (Traditional & AJAX)
+```
+┌─ Traditional Form Submit
+│  Browser → .htaccess → index.php
+│    → core/App.php parses URL (e.g., customer/browseMedicines)
+│    → loads controller function (customer_browseMedicines)
+│    → controller calls models (mysqli via core/Database.php)
+│    → data passed to view
+│    → layout renders with page reload
 │
-├── public/                       # Web root - entry point
-│   ├── index.php                 # Application bootstrap
-│   ├── css/
-│   │   ├── style.css             # Main stylesheet
-│   │   ├── admin.css
-│   │   ├── inventory.css
-│   │   └── customer.css
-│   ├── js/
-│   │   ├── main.js               # Main JavaScript
-│   │   ├── admin.js
-│   │   ├── inventory.js
-│   │   └── customer.js
-│   ├── images/                   # Static images
-│   ├── uploads/                  # User uploaded files
-│   └── .htaccess                 # URL rewriting rules
-│
-├── config/                       # Configuration files
-│   ├── config.php                # App settings & constants
-│   └── database.php              # Database initialization
-│
-├── core/                         # Core procedural functions
-│   ├── App.php                   # initApp(), routeRequest(), render()
-│   ├── Controller.php            # isLoggedIn(), requireAuth(), requireRole()
-│   ├── Database.php              # query(), fetchAll(), execute(), insertRecord()
-│   └── Model.php                 # updateRecord(), deleteRecord(), getPaginated()
-│
-├── helpers/                      # Helper utility functions
-│   ├── session_helper.php        # setUserSession(), destroyUserSession()
-│   ├── url_helper.php            # url(), redirectTo(), getQueryParam()
-│   └── validation_helper.php     # validateEmail(), sanitize(), hashPassword()
-│
-├── routes/                       # Routing configuration
-│   └── web.php                   # Routing documentation
-│
-├── database/                     # Database files
-│   └── schema.sql                # MySQL database schema
-│
-├── .htaccess                     # Root URL rewriting
-├── .gitignore                    # Git ignore file
-└── README.md                     # This file
+└─ AJAX Request (Real-time Search / Add to Cart)
+   JavaScript (Fetch API) → Backend endpoint (same router)
+     → Controller detects AJAX header (X-Requested-With or Accept: application/json)
+     → Returns JSON response instead of HTML
+     → Frontend updates DOM without page reload
 ```
 
-## Procedural Programming Approach
+### AJAX Implementation Details
 
-### Naming Convention
-- **Controllers:** `controllername_actionname()`
-  - Example: `auth_login()`, `admin_dashboard()`, `customer_home()`
+#### **Real-time Medicine Search** – [search.js](public/assets/js/search.js)
+- **Type:** GET request
+- **Endpoint:** `customer/searchMedicines?q={query}`
+- **Trigger:** Debounced input (300ms) on search bar
+- **Response:** JSON with `{ success, products, count }`
+- **UX:** Loading state → products grid → result count
 
-- **Models:** `model_operation()`
-  - Example: `userGetById()`, `productSearch()`, `orderCreate()`
-
-- **Core Functions:** Descriptive function names
-  - `initApp()`, `routeRequest()`, `render()`, `query()`, `execute()`
-
-### Routing System
-The application uses a simple procedural routing system:
-
-```
-Request URL: /auth/login
-    ↓
-routeRequest() parses URL
-    ↓
-Loads AuthController.php
-    ↓
-Calls auth_login() function
-    ↓
-render('auth/login') outputs view
+```javascript
+// Example: search.js initiates GET
+fetch(baseUrl + 'customer/searchMedicines?q=' + encodeURIComponent(searchQuery), {
+    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+})
 ```
 
-### Database Operations
-All database operations use procedural functions:
+**Server-side:** [CustomerController.php](app/controllers/CustomerController.php) → `customer_searchMedicines()`
 
-```php
-// Fetch data
-$user = fetchOne('SELECT * FROM users WHERE id = ?', 'i', [$userId]);
-$users = fetchAll('SELECT * FROM users');
+---
 
-// Insert data
-$userId = insertRecord('users', $userData);
+#### **Add to Cart (AJAX)** – [cart.js](public/assets/js/cart.js)
+- **Type:** POST request
+- **Endpoint:** `customer/addToCart`
+- **Trigger:** Form submit on "Add to Cart" button
+- **Request Body:** `FormData` (product_id, quantity)
+- **Response:** JSON with `{ success, message, error }`
+- **Validation:**
+  - Checks if product already in cart → returns `{ success: false, error: "Product already in cart" }`
+  - Validates stock → returns error if out of stock
+  - On success → displays inline feedback + button state change
+- **Fallback:** If server responds with non-JSON (e.g., HTML redirect), treats as soft success
 
-// Update data
-updateRecord('users', ['name' => 'New Name'], 'id = ?', [$userId]);
-
-// Delete data
-deleteRecord('users', 'id = ?', [$userId]);
-
-// Query with results
-$result = query('SELECT * FROM products WHERE category_id = ?', 'i', [$categoryId]);
+```javascript
+// Example: cart.js initiates POST
+fetch(form.action, {
+    method: 'POST',
+    headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+    body: new FormData(form)
+})
 ```
 
-### Model Functions
-Model files contain specific business logic functions:
+**Server-side:** [CustomerController.php](app/controllers/CustomerController.php) → `customer_addToCart()`
 
-```php
-// User Model (User.php)
-userGetByEmail($email)
-userCreate($name, $email, $password, $role)
-userUpdate($userId, $data)
-userUpdatePassword($userId, $newPassword)
-userSetStatus($userId, $status)
+---
 
-// Product Model (Product.php)
-productGetById($id)
-productSearch($searchTerm)
-productGetLowStock($threshold)
-productGetExpiring($days)
-productReduceStock($productId, $quantity)
+### Getting Started
+**Prerequisites**
+- PHP 8+
+- MySQL 5.7+/MariaDB
+- Apache with mod_rewrite (XAMPP is fine)
 
-// Cart Model (Cart.php)
-cartGetOrCreate($userId)
-cartAddItem($cartId, $productId, $quantity)
-cartGetTotal($cartId)
-cartClear($cartId)
-```
+**Installation**
+1) Clone into `xampp/htdocs/` (or your Apache docroot):
+   ```bash
+   git clone <repo-url> WebTech_Project-Pharmacy_Management_System
+   ```
+2) Create DB and import schema:
+   ```sql
+   CREATE DATABASE pharmacy_management;
+   USE pharmacy_management;
+   SOURCE database/schema.sql;   -- adjust path if needed
+   ```
+3) Configure app: edit [config/config.php](config/config.php) for `DB_HOST/DB_USER/DB_PASSWORD/DB_NAME` and `BASE_URL`.
+4) Start Apache + MySQL (XAMPP).
+5) Visit `http://localhost/WebTech_Project-Pharmacy_Management_System/`.
 
-### Controller Examples
-
-```php
-// Authentication Controller
-function auth_login() {
-    if (isLoggedIn()) {
-        redirectTo('admin/dashboard');
-    }
-    render('auth/login');
-}
-
-function auth_loginProcess() {
-    if (!isPost()) redirectTo('auth/login');
-    
-    $email = sanitizeEmail(getPost('email'));
-    $password = getPost('password');
-    
-    $user = userGetByEmail($email);
-    if ($user && verifyPassword($password, $user['password'])) {
-        setUserSession($user['id'], $user['name'], $user['email'], $user['role']);
-        redirectTo('admin/dashboard');
-    }
-    
-    setFlash('Invalid credentials', 'error');
-    redirectTo('auth/login');
-}
-
-// Admin Controller
-function admin_dashboard() {
-    requireRole('admin');
-    
-    $totalUsers = countRecords('users');
-    $totalProducts = countRecords('products');
-    $totalRevenue = orderGetTotalRevenue();
-    
-    render('admin/dashboard', [
-        'totalUsers' => $totalUsers,
-        'totalProducts' => $totalProducts,
-        'totalRevenue' => $totalRevenue
-    ]);
-}
-
-// Customer Controller
-function customer_addToCart() {
-    if (!isPost()) redirectTo('customer/home');
-    
-    $productId = getPost('product_id');
-    $quantity = getPost('quantity', 1);
-    
-    $cartId = cartGetOrCreate(getCurrentUserId());
-    cartAddItem($cartId, $productId, $quantity);
-    
-    setFlash('Product added to cart', 'success');
-    redirectTo('customer/cart');
-}
-```
-
-## Advantages of This Procedural Approach
-
-✅ **Simplicity** - Direct function calls, easy to understand  
-✅ **No Class Overhead** - Lower memory footprint  
-✅ **Easy Debugging** - Straightforward function tracing  
-✅ **Quick Development** - Minimal boilerplate code  
-✅ **Direct Database Access** - No ORM complexity  
-✅ **Full MVC Organization** - Still maintains clean structure  
-
-## Database Setup
-
-Create the database and import schema:
-```bash
-mysql -u root -p
-CREATE DATABASE pharmacy_management;
-USE pharmacy_management;
-SOURCE database/schema.sql;
-```
-
-## Configuration
-
-Edit `config/database.php`:
-```php
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASSWORD', 'your_password');
-define('DB_NAME', 'pharmacy_management');
-```
-
-## URL Structure
-
-- **Home:** `/` or `/home/index`
-- **Login:** `/auth/login`
-- **Register:** `/auth/register`
-- **Admin Dashboard:** `/admin/dashboard` (requires admin role)
+**Default Roles & Routes**
+- **Admin:** `/admin/dashboard`
 - **Inventory Manager:** `/inventory_manager/dashboard`
-- **Customer Store:** `/customer/home`
-- **Profile:** `/profile/view` and `/profile/edit`
+- **Customer:** `/customer/home` (featured products + AJAX search)
 
-## File Guidelines
+### Stylesheet Reference
+| File | Purpose |
+|------|---------|
+| [public/assets/css/style.css](public/assets/css/style.css) | Main stylesheet (responsive layout, buttons, cards, grid) |
 
-- All procedural functions (no classes)
-- Use consistent naming convention: `functionName()`
-- Include docstrings for complex functions
-- Keep controller functions focused on single responsibility
-- Use model functions for database operations
-- Always use helper functions for validation and sanitization
+### Usage Snippets
+- Render a view with data:
+  ```php
+  render('admin/dashboard', ['totalUsers' => $count, 'totalProducts' => $products]);
+  ```
+- Run a parametrized query (mysqli prepared):
+  ```php
+  $lowStock = fetchAll('SELECT * FROM products WHERE quantity < ?', 'i', [10]);
+  ```
+- Detect AJAX & return JSON:
+  ```php
+  if (isAjax()) {
+      header('Content-Type: application/json');
+      echo json_encode(['success' => true, 'message' => 'Product added']);
+      exit;
+  }
+  ```
+- Fetch with headers (JavaScript):
+  ```js
+  fetch(url, {
+      headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
+  })
+  ```
 
-## Contributors
-- **Student 1:** Master Admin Module Development
-- **Student 2:** Inventory Manager Module Development
-- **Student 3:** Customer Module Development
+### Routes & Screens (examples)
+| Route | Purpose |
+|-------|---------|
+| `/` | Role-aware landing |
+| `/home/about` | About page |
+| `/auth/login` | Login form |
+| `/auth/register` | Registration form |
+| `/admin/dashboard` | Admin dashboard |
+| `/inventory_manager/dashboard` | Inventory dashboard |
+| `/inventory_manager/products` | Product list & CRUD |
+| `/customer/home` | Featured medicines (AJAX cart) |
+| `/customer/browseMedicines` | Search + browse (real-time AJAX search) |
+| `/customer/cart` | Cart view & checkout |
+| `/customer/orderHistory` | Past orders |
+| `/customer/searchMedicines?q={query}` | AJAX endpoint (GET, returns JSON) |
+| `/customer/addToCart` | AJAX endpoint (POST, returns JSON) |
 
-## License
-Educational Project - 2026
+### Screenshots
+_Place screenshots here (home, about, admin dashboard, inventory dashboard, customer shop, AJAX search, cart with feedback messages)._ 
 
-## Support
-For issues or questions, contact the development team or create an issue in the repository.
+### Contributing
+- Issues/PRs welcome. Please: 
+  1) Fork → branch (`feature/your-change`) 
+  2) Keep changes minimal and procedural (no frameworks)
+  3) For AJAX: ensure endpoint returns JSON when headers `X-Requested-With: XMLHttpRequest` or `Accept: application/json` are present
+  4) Test in modern browsers (Chrome, Firefox, Edge) and IE11 if needed
+  5) Include clear steps to reproduce and test notes.
+
+### Security Notes
+- All DB queries use prepared statements (mysqli `bind_param`)
+- Passwords hashed with `password_hash()` (bcrypt)
+- Session-based auth with role validation
+- AJAX endpoints check auth and return JSON errors (no HTML dumps)
+- SQL injection & XSS mitigated via parameterized queries + `htmlspecialchars()`
+
+### License
+- Educational use — 2026.
+

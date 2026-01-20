@@ -29,9 +29,12 @@ include_once __DIR__ . '/../layouts/header.php';
 						<p class="price">৳ <?php echo number_format($product['price'], 2); ?></p>
 						<p class="stock">In stock: <?php echo (int) $product['quantity']; ?></p>
 						<div class="mt-20 flex-between">
-							<form action="<?php echo BASE_URL; ?>/customer/addToCart" method="POST" style="margin:0; flex:1;">
+							<form class="add-to-cart-form" action="<?php echo BASE_URL; ?>/customer/addToCart" method="POST" style="margin:0; flex:1;">
 								<input type="hidden" name="product_id" value="<?php echo (int) $product['id']; ?>">
-								<input type="hidden" name="quantity" value="1">
+								<div style="margin-bottom: 10px;">
+									<label for="qty_<?php echo (int) $product['id']; ?>">Quantity:</label>
+									<input type="number" id="qty_<?php echo (int) $product['id']; ?>" name="quantity" value="1" min="1" max="<?php echo (int) $product['quantity']; ?>" style="width: 60px; padding: 5px;">
+								</div>
 								<button type="submit" class="btn btn-primary btn-sm" style="width:100%;">Add to Cart</button>
 							</form>
 						</div>
@@ -43,5 +46,13 @@ include_once __DIR__ . '/../layouts/header.php';
 		<?php endif; ?>
 	</div>
 </div>
+
+<!-- Setup BASE_URL for JavaScript -->
+<script>
+	window.BASE_URL = '<?php echo BASE_URL; ?>';
+</script>
+
+<!-- AJAX add-to-cart handler -->
+<script src="<?php echo BASE_URL; ?>/assets/js/cart.js"></script>
 
 <?php include_once __DIR__ . '/../layouts/footer.php'; ?>

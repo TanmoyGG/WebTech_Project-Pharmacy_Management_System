@@ -1,6 +1,5 @@
 <?php
 // Inventory Manager Controller - Manages products, stock, categories, and orders
-// All functions follow procedural pattern: inventory_manager_[action]()
 
 require_once __DIR__ . '/../models/Product.php';
 require_once __DIR__ . '/../models/Category.php';

@@ -1,6 +1,5 @@
 <?php
 // Profile Controller - User profile management
-// All functions follow procedural pattern: profile_[action]()
 
 require_once __DIR__ . '/../models/User.php';
 

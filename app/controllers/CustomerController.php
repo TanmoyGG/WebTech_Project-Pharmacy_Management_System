@@ -1,6 +1,5 @@
 <?php
 // Customer Controller - Browse, search, cart, orders
-// All functions follow procedural pattern: customer_[action]()
 
 require_once __DIR__ . '/../models/Product.php';
 require_once __DIR__ . '/../models/Cart.php';
@@ -82,20 +81,37 @@ function customer_addToCart() {
     // Get product price
     $product = productGetById($product_id);
     if (!$product) {
+        // AJAX response
+        if (isAjax()) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => 'Product not found']);
+            exit;
+        }
         setFlash('Product not found', 'error');
         redirectTo('customer/browseMedicines');
     }
     
     // Check if already in cart
     if (cartHasProduct($cart_id, $product_id)) {
+        // AJAX response
+        if (isAjax()) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => false, 'error' => 'Product already in cart']);
+            exit;
+        }
         setFlash('Product already in cart', 'info');
+        redirectTo('customer/browseMedicines');
     } else {
         cartAddItem($cart_id, $product_id, $quantity, $product['price']);
+        // AJAX response
+        if (isAjax()) {
+            header('Content-Type: application/json');
+            echo json_encode(['success' => true, 'message' => 'Product added to cart successfully!']);
+            exit;
+        }
         setFlash('Product added to cart successfully! View your cart anytime.', 'success');
+        redirectTo('customer/browseMedicines');
     }
-    
-    // Redirect back to browse page (or home if no referrer)
-    redirectTo('customer/browseMedicines');
 }
 
 // View cart

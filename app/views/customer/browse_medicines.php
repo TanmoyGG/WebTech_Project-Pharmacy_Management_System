@@ -31,5 +31,8 @@ include_once __DIR__ . '/../layouts/header.php';
 <!-- Load external search script -->
 <script src="<?php echo BASE_URL; ?>/assets/js/search.js"></script>
 
+<!-- AJAX add-to-cart handler -->
+<script src="<?php echo BASE_URL; ?>/assets/js/cart.js"></script>
+
 <?php include_once __DIR__ . '/../layouts/footer.php'; ?>
 
