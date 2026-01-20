@@ -33,6 +33,7 @@
                         <a href="<?php echo BASE_URL; ?>admin/transactionHistory">Transactions</a>
                         <a href="<?php echo BASE_URL; ?>admin/systemConfig">Settings</a>
                         <a href="<?php echo BASE_URL; ?>admin/reports">Reports</a>
+                        <a href="<?php echo BASE_URL; ?>home/about">About</a>
                     
                     <!-- Inventory Manager Menu -->
                     <?php elseif ($role === 'inventory_manager'): ?>
@@ -42,6 +43,7 @@
                         <a href="<?php echo BASE_URL; ?>inventory_manager/lowStock">Low Stock</a>
                         <a href="<?php echo BASE_URL; ?>inventory_manager/expiringItems">Expiring Items</a>
                         <a href="<?php echo BASE_URL; ?>inventory_manager/expiredItems">Expired Items</a>
+                        <a href="<?php echo BASE_URL; ?>home/about">About</a>
                     
                     <!-- Customer Menu -->
                     <?php else: ?>
@@ -56,6 +58,7 @@
                             <?php endif; ?>
                         </a>
                         <a href="<?php echo BASE_URL; ?>customer/orderHistory">My Orders</a>
+                        <a href="<?php echo BASE_URL; ?>home/about">About</a>
                     <?php endif; ?>
                     
                     <!-- User Dropdown -->
@@ -69,6 +72,7 @@
                 </div>
             <?php else: ?>
                 <div class="navbar-menu">
+                    <a href="<?php echo BASE_URL; ?>home/about">About</a>
                     <a href="<?php echo BASE_URL; ?>auth/login">Login</a>
                     <a href="<?php echo BASE_URL; ?>auth/register">Register</a>
                 </div>
