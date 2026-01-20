@@ -192,12 +192,22 @@ fetch(form.action, {
    ```bash
    git clone <repo-url> WebTech_Project-Pharmacy_Management_System
    ```
-2) Create DB and import schema:
+2) Create DB and import schema (choose one method):
+
+   **Method A: Using MySQL Command Line**
    ```sql
    CREATE DATABASE pharmacy_management;
    USE pharmacy_management;
    SOURCE database/schema.sql;   -- adjust path if needed
    ```
+
+   **Method B: Using phpMyAdmin**
+   - Open phpMyAdmin in browser (`http://localhost/phpmyadmin`)
+   - Create a new database named `pharmacy_management`
+   - Go to **SQL** tab
+   - Copy all code from [database/schema.sql](database/schema.sql)
+   - Paste into the SQL editor and click **Go**
+
 3) Configure app: edit [config/config.php](config/config.php) for `DB_HOST/DB_USER/DB_PASSWORD/DB_NAME` and `BASE_URL`.
 4) Start Apache + MySQL (XAMPP).
 5) Visit `http://localhost/WebTech_Project-Pharmacy_Management_System/`.
