@@ -38,7 +38,7 @@ function validateForm(formId) {
     return isValid;
 }
 
-// Add to cart functionality (will be implemented in product views)
+// Add to cart functionality
 function addToCart(productId, quantity = 1) {
     // This will be called from product pages
     fetch(`${window.location.origin}/cart/add`, {

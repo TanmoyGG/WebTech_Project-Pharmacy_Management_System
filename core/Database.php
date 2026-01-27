@@ -1,6 +1,4 @@
 <?php
-// Database connection and query functions (Procedural)
- 
 
 // Global database connection variable
 /** @var mysqli|null $db_connection */
@@ -24,7 +22,7 @@ function initDatabase($host, $user, $password, $database) {
     return $db_connection;
 }
 
-// Get database connection (lazy init) and guarantee mysqli instance
+// Get database connection (lazy init)
 function getConnection(): mysqli {
     global $db_connection;
 

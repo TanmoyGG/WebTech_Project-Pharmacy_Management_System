@@ -1,5 +1,5 @@
 <?php
-// Validation Helper Functions (Procedural)
+// Validation Helper Functions
 // Only essential, used validation functions
 
 // Validate email
@@ -18,7 +18,7 @@ function validateLength($string, $min = 0, $max = PHP_INT_MAX) {
     return $length >= $min && $length <= $max;
 }
 
-// Validate password strength (6 characters minimum - Bangladesh standard)
+// Validate password strength (6 characters minimum)
 function validatePassword($password) {
     // Minimum 6 characters
     return strlen($password) >= 6;

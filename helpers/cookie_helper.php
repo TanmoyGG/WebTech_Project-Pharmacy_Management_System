@@ -1,5 +1,5 @@
 <?php
-// Cookie Helper Functions (Procedural)
+// Cookie Helper Functions
 // Manages persistent cookie data for user preferences, recent views, and remember-me functionality
 
 // Cookie expiration constants
